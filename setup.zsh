@@ -8,25 +8,25 @@ echo "Initializing configuration script..."
 OWNMINE_HOME="$HOME"
 OWNMINE_ZSHRC=".zshrc"
 OWNMINE_REPO="https://raw.githubusercontent.com/ibnunes/ownMine/master"
-OWNMINE_SERVER-"minecraft"
-OWNMINE_FOLDER=".minecraft.d"
-OWNMINE_FILES=("mine" "pwd" "remote" "stdout" "utils")
+OWNMINE_SERVER-"ownmine"
+OWNMINE_FOLDER=".ownmine.d"
+OWNMINE_FILES=("ownmine" "pwd" "remote" "stdout" "utils")
 
 echo "Config: .zshrc"
-echo "# Defined by ownMine in .minecraft.d
-if [ ! -d \"\$HOME\"/.minecraft.d ]; then
-    mkdir -p \"\$HOME\"/.minecraft.d;
+echo "# Defined by ownMine in .ownmine.d
+if [ ! -d \"\$HOME\"/.ownmine.d ]; then
+    mkdir -p \"\$HOME\"/.ownmine.d;
 fi
 
-for cfg in \"\$HOME\"/.minecraft.d/*.zsh; do
+for cfg in \"\$HOME\"/.ownmine.d/*.zsh; do
     . \"\$cfg\"
 done
 unset -v cfg
 
 # ownMine scripts initialization
-mine_server_declare_pwd
-mine_server_declare_stdout
-mine_debug_off" >> $OWNMINE_HOME/$OWNMINE_ZSHRC
+ownmine_server_declare_pwd
+ownmine_server_declare_stdout
+ownmine_debug_off" >> $OWNMINE_HOME/$OWNMINE_ZSHRC
 
 echo "Get: ownMine zsh scripts"
 for file in OWNMINE_FILES; do
@@ -63,7 +63,7 @@ Restart=always
 RestartSec=120
 
 [Install]
-WantedBy=multi-user.target" > /etc/systemd/system/minecraft.service
+WantedBy=multi-user.target" > /etc/systemd/system/ownmine.service
 
 echo "Add: Discord bot service"
 echo "[Unit]
@@ -77,14 +77,14 @@ KillMode=none
 SuccessExitStatus=0 1
 NoNewPrivileges=true
 WorkingDirectory=$OWNMINE_HOME/$OWNMINE_FOLDER
-ExecStart=/usr/bin/python3 $OWNMINE_HOME/$OWNMINE_FOLDER/bot.py
-ExecStop=/usr/bin/sh -c \"kill $(ps -ef | grep bot | awk '{print $2}' | head -1)\"
+ExecStart=/usr/bin/python3 $OWNMINE_HOME/$OWNMINE_FOLDER/ownminebot.py
+ExecStop=/usr/bin/sh -c \"kill $(ps -ef | grep ownminebot | awk '{print $2}' | head -1)\"
 SyslogIdentifier=ownmine-discord
 Restart=always
 RestartSec=120
 
 [Install]
-WantedBy=multi-user.target" > /etc/systemd/system/minebot.service
+WantedBy=multi-user.target" > /etc/systemd/system/ownminebot.service
 
 echo "Config: systemd services (your root password is necessary)"
 sudo systemctl daemon-reload
@@ -99,7 +99,7 @@ unset OWNMINE_FILES
 unset OWNMINE_RCON_PASS
 
 echo "ownMine has been configured. Check out out to use the commands with:
-    mine help
-    minebot help"
+    ownmine help
+    ownminebot help"
 
 echo "Enjoy ownMine!"

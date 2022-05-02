@@ -16,8 +16,8 @@ function mine_server_declare_pwd() {
     SMB_DIR_MODE=                   # Directory mode (suggestion: 0770)
 
     # Local directories
-    MINE_LOCAL_SERVER=              # Local directory where server is located
-    MINE_LOCAL_BACKUP=              # Directory of local backups
+    MINE_LOCAL_SERVER="ownmine"     # Local directory where server is located
+    MINE_LOCAL_BACKUP="ownmine.bk"  # Directory of local backups
 
     # === DO NOT CHANGE FROM HERE ON! ===
     # Complete remote directory

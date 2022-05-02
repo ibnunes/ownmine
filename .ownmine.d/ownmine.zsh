@@ -1,42 +1,50 @@
 # Turns on error for the operation
-function mine_define_error() {
+function ownmine_define_error() {
     if [ $1 -ne 0 ]; then
         MINE_SERVER_OPERATION_SUCCESS=$1
     fi
 }
 
 # Turns Debug Mode on
-function mine_debug_on() {
+function ownmine_debug_on() {
     echo "ownMine Server: DEBUG mode"
     MINE_SERVER_DEBUG=1
 }
 
 # Turns Debug Mode off
-function mine_debug_off() {
+function ownmine_debug_off() {
     # Optional output: uncomment next line if you want it
     # echo "ownMine Server: PRODUCTION mode"
     MINE_SERVER_DEBUG=0
 }
 
 
-function minebot() {
+function ownminebot() {
+    # Help output
+    function ownminebothelp() {
+        echo "$MINE_SERVER_STDOUT_HELP"
+    }
+
     if [ $# -ne 1 ]; then
         echo "Too many arguments"
         return 1
     fi
 
     case $1 in
+        ("help")
+            ownminebothelp
+            ;;
         ("start")
             echo "ownMine Discord Bot: Start service"
-            sudo systemctl start minebot.service
+            sudo systemctl start ownminebot.service
             ;;
         ("stop")
             echo "ownMine Discord Bot: Stop service"
-            sudo systemctl stop minebot.service
+            sudo systemctl stop ownminebot.service
             ;;
         ("status")
             echo "ownMine Discord Bot: Service status"
-            sudo systemctl status minebot.service
+            sudo systemctl status ownminebot.service
             ;;
         (*)
             echo "Unknown option $1"
@@ -45,10 +53,10 @@ function minebot() {
 }
 
 
-function mine() {
+function ownmine() {
     # === REGION Auxiliary Functions ===
     # General function to sync with remote server
-    function mine_server_general_sync() {
+    function ownmine_server_general_sync() {
         # 1. Make temporary folder
         TMP=$(mktemp -d)
         echo "Temporary folder: $TMP"
@@ -87,38 +95,38 @@ function mine() {
 
         # 4. Unmount remote server and delete temporary folder
         umountremote "$TMP"
-        mine_define_error $?
+        ownmine_define_error $?
         rmtemp "$TMP"
         return $MINE_SERVER_OPERATION_SUCCESS
     }
 
     # Proxy for push
-    function mine_server_push() {
+    function ownmine_server_push() {
         MINE_SERVER_OPERATION_DESCRIPTION="Pushing updates to remote server"
-        mine_server_general_sync "$MINE_SAMBA_FOLDER_MAIN" "$MINE_LOCAL_SERVER" "$MINE_TEMP"
+        ownmine_server_general_sync "$MINE_SAMBA_FOLDER_MAIN" "$MINE_LOCAL_SERVER" "$MINE_TEMP"
         return $MINE_SERVER_OPERATION_SUCCESS
     }
 
     # Proxy for pull
-    function mine_server_pull() {
+    function ownmine_server_pull() {
         MINE_SERVER_OPERATION_DESCRIPTION="Pulling backup from remote server"
-        mine_server_general_sync "$MINE_SAMBA_FOLDER_MAIN" "$MINE_TEMP" "$MINE_LOCAL_SERVER"
+        ownmine_server_general_sync "$MINE_SAMBA_FOLDER_MAIN" "$MINE_TEMP" "$MINE_LOCAL_SERVER"
         return $MINE_SERVER_OPERATION_SUCCESS
     }
 
     # Proxy for backup sync
-    function mine_server_sync() {
+    function ownmine_server_sync() {
         MINE_SERVER_OPERATION_DESCRIPTION="Syncing backups with remote server"
-        mine_server_general_sync "$MINE_SAMBA_FOLDER_BACKUP" "$MINE_LOCAL_BACKUP" "$MINE_TEMP"
+        ownmine_server_general_sync "$MINE_SAMBA_FOLDER_BACKUP" "$MINE_LOCAL_BACKUP" "$MINE_TEMP"
         return $MINE_SERVER_OPERATION_SUCCESS
     }
 
     # Local backup
-    function mine_server_backup() {
+    function ownmine_server_backup() {
         echo "Making local backup..."
         if [ $MINE_SERVER_DEBUG -eq 1 ]; then echo "$MINE_SERVER_STDOUT_DEBUG_HALT"; return 0; fi
         sudo cp -rp "$MINE_LOCAL_SERVER" "$MINE_LOCAL_BACKUP/minecraft-$(date +%Y%m%d%H%M%S)"
-        mine_define_error $?
+        ownmine_define_error $?
         if [ $MINE_SERVER_OPERATION_SUCCESS -eq 0 ]; then
             echo "Local backup successful."
             return $MINE_SERVER_OPERATION_SUCCESS
@@ -127,7 +135,7 @@ function mine() {
     }
 
     # Help output
-    function minehelp() {
+    function ownminehelp() {
         echo "$MINE_SERVER_STDOUT_HELP"
     }
     # === END REGION ===================
@@ -139,7 +147,7 @@ function mine() {
 
     # Checks if first argument is null
     if [ -z "$1" ]; then
-        minehelp
+        ownminehelp
         return 0
     fi
     
@@ -156,15 +164,15 @@ function mine() {
     
     # Checks if help is asked for
     if [[ "$1" == "help" ]]; then
-        minehelp
+        ownminehelp
         return 0
     fi
 
     # Checks if debug mode is asked for
     if [[ "$1" == "debug" ]]; then
         case $2 in
-            ("on")  mine_debug_on  ;;
-            ("off") mine_debug_off ;;
+            ("on")  ownmine_debug_on  ;;
+            ("off") ownmine_debug_off ;;
             (*)     echo "Unknow option $2 for $1" ;;
         esac
         return 0
@@ -188,35 +196,35 @@ function mine() {
     case $1 in
         ("start")
             echo "ownMine Server: Start service"
-            sudo systemctl start minecraft.service
+            sudo systemctl start ownmine.service
             ;;
         ("stop")
             echo "ownMine Server: Stop service"
-            sudo systemctl stop minecraft.service
+            sudo systemctl stop ownmine.service
             ;;
         ("startall")
-            mine start
-            minebot start
+            ownmine start
+            ownminebot start
             ;;
         ("stopall")
-            mine stop
-            minebot stop
+            ownmine stop
+            ownminebot stop
             ;;
         ("status")
             echo "ownMine Server: Service status"
-            sudo systemctl status minecraft.service
+            sudo systemctl status ownmine.service
             ;;
         ("push")
             echo "ownMine Server: Push remote backup"
-            mine_server_push
+            ownmine_server_push
             ;;
         ("sync")
             echo "ownMine Server: Sync backups"
-            mine_server_sync
+            ownmine_server_sync
             ;;
         ("backup")
             echo "ownMine Server: Local Backup"
-            mine_server_backup
+            ownmine_server_backup
             ;;
         ("pull")
             echo "ownMine Server: Recover from remote backup"
@@ -226,13 +234,13 @@ function mine() {
   3) Recover from main remote backup."
             confirm "Are you sure you want to proceed?"
             if [ $? -eq 1 ]; then return 0; fi
-            mine backup
-            mine sync
-            mine_server_pull
+            ownmine backup
+            ownmine sync
+            ownmine_server_pull
             ;;
         ("exit")
-            mine stop
-            mine push
+            ownmine stop
+            ownmine push
             ;;
         (*)
             echo "Unknown option $1"
