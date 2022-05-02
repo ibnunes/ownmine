@@ -1,6 +1,6 @@
 function mine_server_declare_stdout() {
     # Help output
-    MINE_SERVER_STDOUT_HELP="Minecraft Server: Help
+    OWNMINE_SERVER_STDOUT_HELP="Minecraft Server: Help
 Call:             mine [option]
 Options:
   start           Starts the server.
@@ -16,7 +16,7 @@ Options:
   debug <on/off>  Turns Debug Mode on or off
 "
 
-    MINEBOT_STDOUT_HELP-"Minecraft Discord Bot: Help
+    OWNMINEBOT_STDOUT_HELP-"Minecraft Discord Bot: Help
 Call:             minebot [option]
 Options:
   start           Starts the bot service
@@ -24,5 +24,5 @@ Options:
   status          Checks for the bot daemon status.
 "
 
-    MINE_SERVER_STDOUT_DEBUG_HALT="HALT: Debug mode"
+    OWNMINE_SERVER_STDOUT_DEBUG_HALT="HALT: Debug mode"
 }

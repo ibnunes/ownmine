@@ -1,28 +1,28 @@
 # Turns on error for the operation
 function ownmine_define_error() {
     if [ $1 -ne 0 ]; then
-        MINE_SERVER_OPERATION_SUCCESS=$1
+        OWNMINE_SERVER_OPERATION_SUCCESS=$1
     fi
 }
 
 # Turns Debug Mode on
 function ownmine_debug_on() {
     echo "ownMine Server: DEBUG mode"
-    MINE_SERVER_DEBUG=1
+    OWNMINE_SERVER_DEBUG=1
 }
 
 # Turns Debug Mode off
 function ownmine_debug_off() {
     # Optional output: uncomment next line if you want it
     # echo "ownMine Server: PRODUCTION mode"
-    MINE_SERVER_DEBUG=0
+    OWNMINE_SERVER_DEBUG=0
 }
 
 
 function ownminebot() {
     # Help output
     function ownminebothelp() {
-        echo "$MINE_SERVER_STDOUT_HELP"
+        echo "$OWNMINE_SERVER_STDOUT_HELP"
     }
 
     if [ $# -ne 1 ]; then
@@ -63,87 +63,87 @@ function ownmine() {
 
         # 1.5. Assign human readable variables
         REMOTE_DIR=$1
-        if [[ $2 == $MINE_TEMP ]]; then DIR_SOURCE="$TMP";      else DIR_SOURCE=$2      fi
-        if [[ $3 == $MINE_TEMP ]]; then DIR_DESTINATION="$TMP"; else DIR_DESTINATION=$3 fi
+        if [[ $2 == $OWNMINE_TEMP ]]; then DIR_SOURCE="$TMP";      else DIR_SOURCE=$2      fi
+        if [[ $3 == $OWNMINE_TEMP ]]; then DIR_DESTINATION="$TMP"; else DIR_DESTINATION=$3 fi
 
         # Debug Mode: halt!
-        if [ $MINE_SERVER_DEBUG -eq 1 ]; then
+        if [ $OWNMINE_SERVER_DEBUG -eq 1 ]; then
             echo "Variables {
     REMOTE_DIR      :  $REMOTE_DIR
     DIR_SOURCE      :  $DIR_SOURCE
     DIR_DESTINATION :  $DIR_DESTINATION
 }"
             rmtemp "$TMP"
-            echo "$MINE_SERVER_STDOUT_DEBUG_HALT"
+            echo "$OWNMINE_SERVER_STDOUT_DEBUG_HALT"
             return 0
         fi
 
         # 2. Mount remote server
-        mountremote "//$MINE_SAMBA_REMOTE/$REMOTE_DIR" "$TMP"
-        if [ $MINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
+        mountremote "//$OWNMINE_SAMBA_REMOTE/$REMOTE_DIR" "$TMP"
+        if [ $OWNMINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
             rmtemp "$TMP"
-            return $MINE_SERVER_OPERATION_SUCCESS
+            return $OWNMINE_SERVER_OPERATION_SUCCESS
         fi
 
         # 3. Sync with remote server
-        echo "$MINE_SERVER_OPERATION_DESCRIPTION... (this might take a while)"
+        echo "$OWNMINE_SERVER_OPERATION_DESCRIPTION... (this might take a while)"
         syncremote "$DIR_SOURCE/*" "$DIR_DESTINATION"
-        if [ $MINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
+        if [ $OWNMINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
             rmtemp "$TMP"
-            return $MINE_SERVER_OPERATION_SUCCESS
+            return $OWNMINE_SERVER_OPERATION_SUCCESS
         fi
 
         # 4. Unmount remote server and delete temporary folder
         umountremote "$TMP"
         ownmine_define_error $?
         rmtemp "$TMP"
-        return $MINE_SERVER_OPERATION_SUCCESS
+        return $OWNMINE_SERVER_OPERATION_SUCCESS
     }
 
     # Proxy for push
     function ownmine_server_push() {
-        MINE_SERVER_OPERATION_DESCRIPTION="Pushing updates to remote server"
-        ownmine_server_general_sync "$MINE_SAMBA_FOLDER_MAIN" "$MINE_LOCAL_SERVER" "$MINE_TEMP"
-        return $MINE_SERVER_OPERATION_SUCCESS
+        OWNMINE_SERVER_OPERATION_DESCRIPTION="Pushing updates to remote server"
+        ownmine_server_general_sync "$OWNMINE_SAMBA_FOLDER_MAIN" "$OWNMINE_LOCAL_SERVER" "$OWNMINE_TEMP"
+        return $OWNMINE_SERVER_OPERATION_SUCCESS
     }
 
     # Proxy for pull
     function ownmine_server_pull() {
-        MINE_SERVER_OPERATION_DESCRIPTION="Pulling backup from remote server"
-        ownmine_server_general_sync "$MINE_SAMBA_FOLDER_MAIN" "$MINE_TEMP" "$MINE_LOCAL_SERVER"
-        return $MINE_SERVER_OPERATION_SUCCESS
+        OWNMINE_SERVER_OPERATION_DESCRIPTION="Pulling backup from remote server"
+        ownmine_server_general_sync "$OWNMINE_SAMBA_FOLDER_MAIN" "$OWNMINE_TEMP" "$OWNMINE_LOCAL_SERVER"
+        return $OWNMINE_SERVER_OPERATION_SUCCESS
     }
 
     # Proxy for backup sync
     function ownmine_server_sync() {
-        MINE_SERVER_OPERATION_DESCRIPTION="Syncing backups with remote server"
-        ownmine_server_general_sync "$MINE_SAMBA_FOLDER_BACKUP" "$MINE_LOCAL_BACKUP" "$MINE_TEMP"
-        return $MINE_SERVER_OPERATION_SUCCESS
+        OWNMINE_SERVER_OPERATION_DESCRIPTION="Syncing backups with remote server"
+        ownmine_server_general_sync "$OWNMINE_SAMBA_FOLDER_BACKUP" "$OWNMINE_LOCAL_BACKUP" "$OWNMINE_TEMP"
+        return $OWNMINE_SERVER_OPERATION_SUCCESS
     }
 
     # Local backup
     function ownmine_server_backup() {
         echo "Making local backup..."
-        if [ $MINE_SERVER_DEBUG -eq 1 ]; then echo "$MINE_SERVER_STDOUT_DEBUG_HALT"; return 0; fi
-        sudo cp -rp "$MINE_LOCAL_SERVER" "$MINE_LOCAL_BACKUP/minecraft-$(date +%Y%m%d%H%M%S)"
+        if [ $OWNMINE_SERVER_DEBUG -eq 1 ]; then echo "$OWNMINE_SERVER_STDOUT_DEBUG_HALT"; return 0; fi
+        sudo cp -rp "$OWNMINE_LOCAL_SERVER" "$OWNMINE_LOCAL_BACKUP/minecraft-$(date +%Y%m%d%H%M%S)"
         ownmine_define_error $?
-        if [ $MINE_SERVER_OPERATION_SUCCESS -eq 0 ]; then
+        if [ $OWNMINE_SERVER_OPERATION_SUCCESS -eq 0 ]; then
             echo "Local backup successful."
-            return $MINE_SERVER_OPERATION_SUCCESS
+            return $OWNMINE_SERVER_OPERATION_SUCCESS
         fi
         echo "Local backup failed."
     }
 
     # Help output
     function ownminehelp() {
-        echo "$MINE_SERVER_STDOUT_HELP"
+        echo "$OWNMINE_SERVER_STDOUT_HELP"
     }
     # === END REGION ===================
 
 
     # === Function =====================
     # Resets success flag
-    MINE_SERVER_OPERATION_SUCCESS=0
+    OWNMINE_SERVER_OPERATION_SUCCESS=0
 
     # Checks if first argument is null
     if [ -z "$1" ]; then
@@ -185,10 +185,10 @@ function ownmine() {
     fi
 
     # Debug Mode: halt!
-    if [ $MINE_SERVER_DEBUG -eq 1 ]; then
+    if [ $OWNMINE_SERVER_DEBUG -eq 1 ]; then
         case $1 in
             ("start" | "stop" | "startall" | "stopall" | "status" )
-                echo "$MINE_SERVER_STDOUT_DEBUG_HALT"
+                echo "$OWNMINE_SERVER_STDOUT_DEBUG_HALT"
                 return 0 ;;
         esac
     fi
@@ -253,5 +253,5 @@ function ownmine() {
     else
         echo "[$1: FAILED]"
     fi
-    return $MINE_SERVER_OPERATION_SUCCESS
+    return $OWNMINE_SERVER_OPERATION_SUCCESS
 }
