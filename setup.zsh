@@ -11,22 +11,11 @@ OWNMINE_REPO="https://raw.githubusercontent.com/ibnunes/ownMine/master"
 OWNMINE_SERVER-"ownmine"
 OWNMINE_FOLDER=".ownmine.d"
 OWNMINE_FILES=("ownmine" "pwd" "remote" "stdout" "utils")
+OWNMINE_SERVICE_FOLDER="systemd/system"
+OWNMINE_SERVICE_FILES=("ownmine" "ownminebot")
 
 echo "Config: .zshrc"
-echo "# Defined by ownMine in .ownmine.d
-if [ ! -d \"\$HOME\"/.ownmine.d ]; then
-    mkdir -p \"\$HOME\"/.ownmine.d;
-fi
-
-for cfg in \"\$HOME\"/.ownmine.d/*.zsh; do
-    . \"\$cfg\"
-done
-unset -v cfg
-
-# ownMine scripts initialization
-ownmine_server_declare_pwd
-ownmine_server_declare_stdout
-ownmine_debug_off" >> $OWNMINE_HOME/$OWNMINE_ZSHRC
+echo "$(curl -s $OWNMINE_REPO/$OWNMINE_ZSHRC)" >> $OWNMINE_HOME/$OWNMINE_ZSHRC
 
 echo "Get: ownMine zsh scripts"
 for file in OWNMINE_FILES; do
@@ -35,7 +24,7 @@ for file in OWNMINE_FILES; do
 done
 
 echo "Get: ownMine Discord bot"
-curl -s "$OWNMINE_REPO/$OWNMINE_FOLDER/bot.py" -o "$OWNMINE_HOME/$OWNMINE_FOLDER/bot.py"
+curl -s "$OWNMINE_REPO/$OWNMINE_FOLDER/ownminebot.py" -o "$OWNMINE_HOME/$OWNMINE_FOLDER/ownminebot.py"
 
 echo "Get: mcrcon (from Tiiffi GitHub repository)"
 git clone https://github.com/Tiiffi/mcrcon.git "$OWNMINE_HOME/tools/mcrcon"
@@ -43,48 +32,18 @@ git clone https://github.com/Tiiffi/mcrcon.git "$OWNMINE_HOME/tools/mcrcon"
 echo "Apply: zsh configurations"
 source $OWNMINE_HOME/$OWNMINE_ZSHRC
 
-echo "Add: Minecraft service"
-read "What is your rcon password? " OWNMINE_RCON_PASS
-echo "[Unit]
-Description=ownMine Server
-After=network.target
-
-[Service]
-User=$USER
-Nice=1
-KillMode=none
-SuccessExitStatus=0 1
-NoNewPrivileges=true
-WorkingDirectory=$OWNMINE_HOME/$OWNMINE_SERVER
-ExecStart=/usr/bin/java -Xmx2048M -Xms2048M -jar $OWNMINE_HOME/$OWNMINE_SERVER/server.jar nogui
-ExecStop=$OWNMINE_HOME/tools/mcrcon/mcrcon -H 127.0.0.1 -P 25575 -p $OWNMINE_RCON_PASS stop
-SyslogIdentifier=ownmine-server
-Restart=always
-RestartSec=120
-
-[Install]
-WantedBy=multi-user.target" > /etc/systemd/system/ownmine.service
-
-echo "Add: Discord bot service"
-echo "[Unit]
-Description=ownMine Discord Bot
-After=network.target
-
-[Service]
-User=$USER
-Nice=1
-KillMode=none
-SuccessExitStatus=0 1
-NoNewPrivileges=true
-WorkingDirectory=$OWNMINE_HOME/$OWNMINE_FOLDER
-ExecStart=/usr/bin/python3 $OWNMINE_HOME/$OWNMINE_FOLDER/ownminebot.py
-ExecStop=/usr/bin/sh -c \"kill $(ps -ef | grep ownminebot | awk '{print $2}' | head -1)\"
-SyslogIdentifier=ownmine-discord
-Restart=always
-RestartSec=120
-
-[Install]
-WantedBy=multi-user.target" > /etc/systemd/system/ownminebot.service
+echo "Add: Minecraft and Discord bot services"
+read "What is your Minecraft server rcon password? (You can define it later manually) " OWNMINE_RCON_PASS
+for file in OWNMINE_SERVICE_FILES; do
+    sudo curl -s "$OWNMINE_REPO/$OWNMINE_SERVICE_FOLDER/$file.service" -o "/etc/$OWNMINE_SERVICE_FOLDER/$file.service"
+    sudo sed -i                                             \
+        -e "s|\$USER|$USER|g"                               \
+        -e "s|\$OWNMINE_HOME|$OWNMINE_HOME|g"               \
+        -e "s|\$OWNMINE_SERVER|$OWNMINE_SERVER|g"           \
+        -e "s|\$OWNMINE_RCON_PASS|$OWNMINE_RCON_PASS|g"     \
+        -e "s|\$OWNMINE_FOLDER|$OWNMINE_FOLDER|g"           \
+        "$file.service"
+done
 
 echo "Config: systemd services (your root password is necessary)"
 sudo systemctl daemon-reload
@@ -98,7 +57,8 @@ unset OWNMINE_FOLDER
 unset OWNMINE_FILES
 unset OWNMINE_RCON_PASS
 
-echo "ownMine has been configured. Check out out to use the commands with:
+echo "ownMine has been configured.
+Check out out to use the commands with:
     ownmine help
     ownminebot help"
 
