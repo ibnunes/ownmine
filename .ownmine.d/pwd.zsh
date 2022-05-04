@@ -1,4 +1,4 @@
-function mine_server_declare_pwd() {
+function ownmine_server_declare_pwd() {
     # Samba share for Minecraft Server
     OWNMINE_SAMBA_SERVER=              # Server IP
     OWNMINE_SAMBA_SHARE=               # Samba share

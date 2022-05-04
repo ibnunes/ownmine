@@ -87,7 +87,7 @@ function ownmine() {
 
         # 3. Sync with remote server
         echo "$OWNMINE_SERVER_OPERATION_DESCRIPTION... (this might take a while)"
-        syncremote "$DIR_SOURCE/*" "$DIR_DESTINATION"
+        syncremote "$DIR_SOURCE" "$DIR_DESTINATION"
         if [ $OWNMINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
             rmtemp "$TMP"
             return $OWNMINE_SERVER_OPERATION_SUCCESS
@@ -248,7 +248,7 @@ function ownmine() {
     esac
 
     # Final message
-    if [ $1 -eq 0 ]; then
+    if [ $OWNMINE_SERVER_OPERATION_SUCCESS -eq 0 ]; then
         echo "[$1: SUCCESS]"
     else
         echo "[$1: FAILED]"
