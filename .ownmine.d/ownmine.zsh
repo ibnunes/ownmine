@@ -89,6 +89,7 @@ function ownmine() {
         echo "$OWNMINE_SERVER_OPERATION_DESCRIPTION... (this might take a while)"
         syncremote "$DIR_SOURCE" "$DIR_DESTINATION"
         if [ $OWNMINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
+            umountremote "$TMP"
             rmtemp "$TMP"
             return $OWNMINE_SERVER_OPERATION_SUCCESS
         fi

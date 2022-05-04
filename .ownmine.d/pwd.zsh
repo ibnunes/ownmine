@@ -10,8 +10,6 @@ function ownmine_server_declare_pwd() {
     SMB_USER=                       # Samba username
     SMB_DOMAIN=                     # Samba domain (traditionally WORKGROUP)
     SMB_PASSWORD=                   # Samba password
-    SMB_GID=                        # Remote GID for username
-    SMB_UID=                        # Remote UID for username
     SMB_FILE_MODE=                  # File mode (suggestion: 0770)
     SMB_DIR_MODE=                   # Directory mode (suggestion: 0770)
 
