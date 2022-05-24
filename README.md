@@ -1,1 +1,80 @@
 # ownMine
+
+**Automation scripts for self-hosted Minecraft servers**
+
+**TODO:** Complete this README. 😅
+
+
+## Installation
+
+<p class="callout warning">This script has not been properly tested yet! Use at your own risk!</p>
+
+```
+zsh -c "$(curl -fsSL https://raw.githubusercontent.com/ibnunes/ownMine/master/setup.zsh)"
+```
+
+
+## Configuration
+
+The file `pwd.zsh` contains all internal variables used by **ownMine**. This file is to be properly filled by the user.
+
+* ✅ You must define the values by yourself.
+* ⚠️ These are pre-filled, but can be modified.
+* ❌ Do **NOT** change theses values!
+
+| Variable | Should be edited | Description |
+| --- | --- | --- |
+| **Remote SMB share &mdash; directory** |
+| `OWNMINE_SAMBA_SERVER`             | ✅ | Server IP or domain. |
+| `OWNMINE_SAMBA_SHARE`              | ✅ | SMB share. |
+| `OWNMINE_SAMBA_SUBDIR`             | ✅ | Directory/ies inside SMB share. |
+| `OWNMINE_SAMBA_FOLDER_MAIN`        | ✅ | Folder for main backup. Used by `push` option. |
+| `OWNMINE_SAMBA_FOLDER_BACKUP`      | ✅ | Folder for older backups. Used by `sync` option. |
+| **Remote SMB share &mdash; login data** |
+| `SMB_USER`                         | ✅ | Remote SMB username. |
+| `SMB_DOMAIN`                       | ✅ | Remote SMB domain. <br> *E.g.* Usually `WORKGROUP` for Windows networks. |
+| `SMB_PASSWORD`                     | ✅ | SMB password for the username defined in `SMB_USER`. |
+| `SMB_FILE_MODE`                    | ⚠️ | File mode. <br> Pre-filled with `0770`. |
+| `SMB_DIR_MODE`                     | ⚠️ | Directory mode. <br> Pre-filled with `0770`. |
+| **Local directory** |
+| `OWNMINE_LOCAL_SERVER`             | ⚠️ | Main folder where the server will run from. <br> Pre-filled with `ownmine`. |
+| `OWNMINE_LOCAL_BACKUP`             | ⚠️ | Folder for local backups. Used by `sync` and `backup` options. <br> Pre-filled with `ownmine.bk`. |
+| `OWNMINE_LOCAL_USER`               | ✅ | Local machine username. Used to fix ownership when the option `pull` is used. |
+| **Remote SMB directory** |
+| `OWNMINE_SAMBA_REMOTE`             | ❌ | Complete remote URL to the SMB directory. <br> Defined as `$OWNMINE_SAMBA_SERVER/$OWNMINE_SAMBA_SHARE/$OWNMINE_SAMBA_SUBDIR`. |
+| **Reserved** |
+| `OWNMINE_TEMP`                     | ❌ | Flag to indicate the usage of local temporary folders. <br> Defined as `{TMP}`. |
+| `OWNMINE_SERVER_OPERATION_SUCCESS` | ❌ | Self-control flag for operations success. <br> Defined as `0`. |
+
+
+Add your Discord bot token to the `ownminebot.py` file, namely on the variable `_TOKEN`.
+
+
+## Usage
+
+### ownMine Minecraft Server
+
+**Call:** `mine [option]`
+| Option | Description |
+| --- | --- |
+| `start`          | Starts the server. |
+| `stop`           | Stops the server. |
+| `startall`       | Starts both the server and the Discord bot. |
+| `stopall`        | Stops both the server and the Discord bot. |
+| `exit`           | Executes 'stop' and 'push' sequentially. |
+| `status`         | Checks for the server daemon status. |
+| `push`           | Pushes a main backup to the remote server. |
+| `pull`           | Recovers from the main remote backup. Makes a local backup first. |
+| `backup`         | Makes a local backup. |
+| `sync`           | Syncs local backups with the remote server. |
+| `debug <on/off>` | Turns Debug Mode on or off. It is off by default. |
+
+
+### ownMine Discord Bot
+
+**Call:** `minebot [option]`
+| Option | Description |
+| --- | --- |
+| `start`  | Starts the bot service|
+| `stop`   | Stops the bot service|
+| `status` | Checks for the bot daemon status. |

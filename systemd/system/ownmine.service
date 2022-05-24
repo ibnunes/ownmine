@@ -1,0 +1,19 @@
+[Unit]
+Description=ownMine Server
+After=network.target
+
+[Service]
+User=$USER
+Nice=1
+KillMode=none
+SuccessExitStatus=0 1
+NoNewPrivileges=true
+WorkingDirectory=$OWNMINE_HOME/$OWNMINE_SERVER
+ExecStart=/usr/bin/java -Xmx4098M -Xms4098M -jar $OWNMINE_HOME/$OWNMINE_SERVER/server.jar nogui
+ExecStop=$OWNMINE_HOME/tools/mcrcon/mcrcon -H 127.0.0.1 -P 25575 -p $OWNMINE_RCON_PASS stop
+SyslogIdentifier=ownmine-server
+Restart=always
+RestartSec=120
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+[Unit]
+Description=ownMine Discord Bot
+After=network.target
+
+[Service]
+User=$USER
+Nice=1
+KillMode=none
+SuccessExitStatus=0 1
+NoNewPrivileges=true
+WorkingDirectory=$OWNMINE_HOME/$OWNMINE_FOLDER
+ExecStart=/usr/bin/python3 $OWNMINE_HOME/$OWNMINE_FOLDER/ownminebot.py
+ExecStop=/usr/bin/sh -c \"kill $(ps -ef | grep ownminebot | awk '{print $2}' | head -1)\"
+SyslogIdentifier=ownmine-discord
+Restart=always
+RestartSec=120
+
+[Install]
+WantedBy=multi-user.target
