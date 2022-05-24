@@ -16,6 +16,7 @@ function ownmine_server_declare_pwd() {
     # Local directories
     OWNMINE_LOCAL_SERVER="ownmine"     # Local directory where server is located
     OWNMINE_LOCAL_BACKUP="ownmine.bk"  # Directory of local backups
+    OWNMINE_LOCAL_USER=
 
     # === DO NOT CHANGE FROM HERE ON! ===
     # Complete remote directory

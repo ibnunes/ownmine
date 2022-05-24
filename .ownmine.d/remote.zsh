@@ -36,7 +36,7 @@ function umountremote() {
 # Syncs with remote server
 function syncremote() {
     if [ $OWNMINE_SERVER_DEBUG -eq 1 ]; then echo "$OWNMINE_SERVER_STDOUT_DEBUG_HALT"; return 0; fi
-    sudo rsync -arutEP --prune-empty-dirs "$1/" "$2/"
+    sudo rsync -artEP $3 --prune-empty-dirs "$1/" "$2/"
     ownmine_define_error $?
     if [ $OWNMINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
         echo "Failed to sync with remote server"

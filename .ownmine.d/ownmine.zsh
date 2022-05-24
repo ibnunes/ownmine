@@ -18,6 +18,12 @@ function ownmine_debug_off() {
     OWNMINE_SERVER_DEBUG=0
 }
 
+# Fixes ownership after sync
+function ownmine_fixownership() {
+    sudo chmod -R 770 $1
+    sudo chown $OWNMINE_LOCAL_USER:$OWNMINE_LOCAL_USER $1
+}
+
 
 function ownminebot() {
     # Help output
@@ -66,6 +72,9 @@ function ownmine() {
         if [[ $2 == $OWNMINE_TEMP ]]; then DIR_SOURCE="$TMP";      else DIR_SOURCE=$2      fi
         if [[ $3 == $OWNMINE_TEMP ]]; then DIR_DESTINATION="$TMP"; else DIR_DESTINATION=$3 fi
 
+        # 1.6. Assign sync mode
+        if [[ $4 == "" ]]; then SYNC_MODE="-u"; else SYNC_MODE=$4; fi
+
         # Debug Mode: halt!
         if [ $OWNMINE_SERVER_DEBUG -eq 1 ]; then
             echo "Variables {
@@ -87,7 +96,7 @@ function ownmine() {
 
         # 3. Sync with remote server
         echo "$OWNMINE_SERVER_OPERATION_DESCRIPTION... (this might take a while)"
-        syncremote "$DIR_SOURCE" "$DIR_DESTINATION"
+        syncremote "$DIR_SOURCE" "$DIR_DESTINATION" $SYNC_MODE
         if [ $OWNMINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
             umountremote "$TMP"
             rmtemp "$TMP"
@@ -111,7 +120,7 @@ function ownmine() {
     # Proxy for pull
     function ownmine_server_pull() {
         OWNMINE_SERVER_OPERATION_DESCRIPTION="Pulling backup from remote server"
-        ownmine_server_general_sync "$OWNMINE_SAMBA_FOLDER_MAIN" "$OWNMINE_TEMP" "$OWNMINE_LOCAL_SERVER"
+        ownmine_server_general_sync "$OWNMINE_SAMBA_FOLDER_MAIN" "$OWNMINE_TEMP" "$OWNMINE_LOCAL_SERVER" -I
         return $OWNMINE_SERVER_OPERATION_SUCCESS
     }
 
@@ -238,6 +247,7 @@ function ownmine() {
             ownmine backup
             ownmine sync
             ownmine_server_pull
+            ownmine_fixownership $OWNMINE_SAMBA_FOLDER_MAIN
             ;;
         ("exit")
             ownmine stop
