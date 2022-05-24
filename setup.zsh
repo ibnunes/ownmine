@@ -8,7 +8,7 @@
 # This only supports zshell for now.
 
 echo "ownMine: self-hosted Minecraft server"
-echo "Automated configuration script"
+echo "Automated configuration script for ZSH"
 
 # 1. Constants declaration
 echo "Initializing configuration script..."
