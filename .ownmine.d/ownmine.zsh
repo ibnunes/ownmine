@@ -247,7 +247,7 @@ function ownmine() {
             ownmine backup
             ownmine sync
             ownmine_server_pull
-            ownmine_fixownership $OWNMINE_SAMBA_FOLDER_MAIN
+            ownmine_fixownership $OWNMINE_LOCAL_SERVER
             ;;
         ("exit")
             ownmine stop
