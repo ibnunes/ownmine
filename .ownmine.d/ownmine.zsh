@@ -21,7 +21,7 @@ function ownmine_debug_off() {
 # Fixes ownership after sync
 function ownmine_fixownership() {
     sudo chmod -R 770 $1
-    sudo chown $OWNMINE_LOCAL_USER:$OWNMINE_LOCAL_USER $1
+    sudo chown -R $OWNMINE_LOCAL_USER:$OWNMINE_LOCAL_USER $1
 }
 
 
