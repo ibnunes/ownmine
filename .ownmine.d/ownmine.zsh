@@ -21,7 +21,7 @@ function ownmine_debug_off() {
 # Fixes ownership after sync
 function ownmine_fixownership() {
     sudo chmod -R 770 $1
-    sudo chown $OWNMINE_LOCAL_USER:$OWNMINE_LOCAL_USER $1
+    sudo chown -R $OWNMINE_LOCAL_USER:$OWNMINE_LOCAL_USER $1
 }
 
 
@@ -247,7 +247,7 @@ function ownmine() {
             ownmine backup
             ownmine sync
             ownmine_server_pull
-            ownmine_fixownership $OWNMINE_SAMBA_FOLDER_MAIN
+            ownmine_fixownership $OWNMINE_LOCAL_SERVER
             ;;
         ("exit")
             ownmine stop
