@@ -25,40 +25,6 @@ function ownmine_fixownership() {
 }
 
 
-function ownminebot() {
-    # Help output
-    function ownminebothelp() {
-        echo "$OWNMINE_SERVER_STDOUT_HELP"
-    }
-
-    if [ $# -ne 1 ]; then
-        echo "Too many arguments"
-        return 1
-    fi
-
-    case $1 in
-        ("help")
-            ownminebothelp
-            ;;
-        ("start")
-            echo "ownMine Discord Bot: Start service"
-            sudo systemctl start ownminebot.service
-            ;;
-        ("stop")
-            echo "ownMine Discord Bot: Stop service"
-            sudo systemctl stop ownminebot.service
-            ;;
-        ("status")
-            echo "ownMine Discord Bot: Service status"
-            sudo systemctl status ownminebot.service
-            ;;
-        (*)
-            echo "Unknown option $1"
-            return 1 ;;
-    esac
-}
-
-
 function ownmine() {
     # === REGION Auxiliary Functions ===
     # General function to sync with remote server
@@ -120,7 +86,7 @@ function ownmine() {
     # Proxy for pull
     function ownmine_server_pull() {
         OWNMINE_SERVER_OPERATION_DESCRIPTION="Pulling backup from remote server"
-        ownmine_server_general_sync "$OWNMINE_SAMBA_FOLDER_MAIN" "$OWNMINE_TEMP" "$OWNMINE_LOCAL_SERVER" -I
+        ownmine_server_general_sync "$OWNMINE_SAMBA_FOLDER_MAIN" "$OWNMINE_TEMP" "$OWNMINE_LOCAL_SERVER"
         return $OWNMINE_SERVER_OPERATION_SUCCESS
     }
 
@@ -160,7 +126,7 @@ function ownmine() {
         ownminehelp
         return 0
     fi
-    
+
     # Checks number of arguments
     case $# in
         (1) ;;
@@ -171,7 +137,7 @@ function ownmine() {
         (*) echo "Too many arguments"
             return 1 ;;
     esac
-    
+
     # Checks if help is asked for
     if [[ "$1" == "help" ]]; then
         ownminehelp

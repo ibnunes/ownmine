@@ -5,14 +5,16 @@ After=network.target
 [Service]
 User=$USER
 Nice=1
-KillMode=none
+KillMode=control-group
 SuccessExitStatus=0 1
 NoNewPrivileges=true
 WorkingDirectory=$OWNMINE_HOME/$OWNMINE_SERVER
-ExecStart=/usr/bin/java -Xmx4098M -Xms4098M -jar $OWNMINE_HOME/$OWNMINE_SERVER/server.jar nogui
+ExecStart=/usr/bin/java -Xmx4096M -Xms4096M -jar $OWNMINE_HOME/$OWNMINE_SERVER/server.jar nogui
 ExecStop=$OWNMINE_HOME/tools/mcrcon/mcrcon -H 127.0.0.1 -P 25575 -p $OWNMINE_RCON_PASS stop
-SyslogIdentifier=ownmine-server
-Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=ownmine
+Restart=on-failure
 RestartSec=120
 
 [Install]
