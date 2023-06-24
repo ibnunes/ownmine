@@ -18,12 +18,6 @@ function ownmine_debug_off() {
     OWNMINE_SERVER_DEBUG=0
 }
 
-# Fixes ownership after sync
-function ownmine_fixownership() {
-    sudo chmod -R 770 $1
-    sudo chown -R $OWNMINE_LOCAL_USER:$OWNMINE_LOCAL_USER $1
-}
-
 
 function ownmine() {
     # === REGION Auxiliary Functions ===
@@ -33,12 +27,19 @@ function ownmine() {
         TMP=$(mktemp -d)
         echo "Temporary folder: $TMP"
 
-        # 1.5. Assign human readable variables
+        # 1.1. Assign human readable variables
         REMOTE_DIR=$1
-        if [[ $2 == $OWNMINE_TEMP ]]; then DIR_SOURCE="$TMP";      else DIR_SOURCE=$2      fi
-        if [[ $3 == $OWNMINE_TEMP ]]; then DIR_DESTINATION="$TMP"; else DIR_DESTINATION=$3 fi
+        if [[ $2 == $OWNMINE_TEMP ]]; then
+            DIR_SOURCE="$TMP"
+            SYNC_CHOWN=""           # Samba takes care of this
+        else DIR_SOURCE=$2 fi
 
-        # 1.6. Assign sync mode
+        if [[ $3 == $OWNMINE_TEMP ]]; then
+            DIR_DESTINATION="$TMP"
+            SYNC_CHOWN="--chown=$OWNMINE_LOCAL_USER:$OWNMINE_LOCAL_USER"
+        else DIR_DESTINATION=$3 fi
+
+        # 1.2. Assign sync mode
         if [[ $4 == "" ]]; then SYNC_MODE="-u"; else SYNC_MODE=$4; fi
 
         # Debug Mode: halt!
@@ -62,7 +63,7 @@ function ownmine() {
 
         # 3. Sync with remote server
         echo "$OWNMINE_SERVER_OPERATION_DESCRIPTION... (this might take a while)"
-        syncremote "$DIR_SOURCE" "$DIR_DESTINATION" $SYNC_MODE
+        syncremote "$DIR_SOURCE" "$DIR_DESTINATION" $SYNC_MODE $SYNC_CHOWN
         if [ $OWNMINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
             umountremote "$TMP"
             rmtemp "$TMP"
@@ -213,7 +214,6 @@ function ownmine() {
             ownmine backup
             ownmine sync
             ownmine_server_pull
-            ownmine_fixownership $OWNMINE_LOCAL_SERVER
             ;;
         ("exit")
             ownmine stop
