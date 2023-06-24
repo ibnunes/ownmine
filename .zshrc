@@ -1,3 +1,4 @@
+
 # Defined by ownMine in .ownmine.d
 if [ ! -d "$HOME"/.ownmine.d ]; then
     mkdir -p "$HOME"/.ownmine.d;
