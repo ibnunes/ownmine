@@ -19,7 +19,7 @@ zsh -c "$(curl -fsSL https://raw.githubusercontent.com/ibnunes/ownMine/master/se
 The file `pwd.zsh` contains all internal variables used by **ownMine**. This file is to be properly filled by the user.
 
 * ✅ You must define the values by yourself.
-* ⚠️ These are pre-filled, but can be modified.
+* ⚠️ These are pre-filled with default values, but can be modified.
 * ❌ Do **NOT** change theses values!
 
 | Variable | Should be edited | Description |
@@ -34,12 +34,17 @@ The file `pwd.zsh` contains all internal variables used by **ownMine**. This fil
 | `SMB_USER`                         | ✅ | Remote SMB username. |
 | `SMB_DOMAIN`                       | ✅ | Remote SMB domain. <br> *E.g.* Usually `WORKGROUP` for Windows networks. |
 | `SMB_PASSWORD`                     | ✅ | SMB password for the username defined in `SMB_USER`. |
-| `SMB_FILE_MODE`                    | ⚠️ | File mode. <br> Pre-filled with `0770`. |
-| `SMB_DIR_MODE`                     | ⚠️ | Directory mode. <br> Pre-filled with `0770`. |
+| `SMB_GID`                          | ✅ | Remote SMB user UID. |
+| `SMB_UID`                          | ✅ | Remote SMB user GID. |
+| `SMB_FILE_MODE`                    | ⚠️ | File mode. <br> Default: `0770`. |
+| `SMB_DIR_MODE`                     | ⚠️ | Directory mode. <br> Default: `0770`. |
 | **Local directory** |
-| `OWNMINE_LOCAL_SERVER`             | ⚠️ | Main folder where the server will run from. <br> Pre-filled with `ownmine`. |
-| `OWNMINE_LOCAL_BACKUP`             | ⚠️ | Folder for local backups. Used by `sync` and `backup` options. <br> Pre-filled with `ownmine.bk`. |
 | `OWNMINE_LOCAL_USER`               | ✅ | Local machine username. Used to fix ownership when the option `pull` is used. |
+| `OWNMINE_LOCAL_SERVER`             | ⚠️ | Main folder where the server will run from. <br> Default: `ownmine`. |
+| `OWNMINE_LOCAL_BACKUP`             | ⚠️ | Folder for local backups. Used by `sync` and `backup` options. <br> Default: `ownmine.bk`. |
+| **Logging** |
+| `OWNMINE_LOG_FOLDER`               | ⚠️ | Local folder where the logfiles are located. <br> Default: `/var/log`. |
+| `OWNMINE_LOG_FILE`                 | ⚠️ | Local logging file. <br> Default: `ownmine.log`. |
 | **Remote SMB directory** |
 | `OWNMINE_SAMBA_REMOTE`             | ❌ | Complete remote URL to the SMB directory. <br> Defined as `$OWNMINE_SAMBA_SERVER/$OWNMINE_SAMBA_SHARE/$OWNMINE_SAMBA_SUBDIR`. |
 | **Reserved** |
@@ -54,7 +59,7 @@ Add your Discord bot token to the `ownminebot.py` file, namely on the variable `
 
 ### ownMine Minecraft Server
 
-**Call:** `mine [option]`
+**Call:** `ownmine [option]`
 | Option | Description |
 | --- | --- |
 | `start`          | Starts the server. |
@@ -72,7 +77,7 @@ Add your Discord bot token to the `ownminebot.py` file, namely on the variable `
 
 ### ownMine Discord Bot
 
-**Call:** `minebot [option]`
+**Call:** `ownminebot [option]`
 | Option | Description |
 | --- | --- |
 | `start`  | Starts the bot service|
