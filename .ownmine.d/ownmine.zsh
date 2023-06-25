@@ -115,6 +115,18 @@ function ownmine() {
     function ownminehelp() {
         echo "$OWNMINE_SERVER_STDOUT_HELP"
     }
+
+    # Command relay for RCON server
+    function ownmine_rcon_command() {
+        $OWNMINE_RCON_BIN                   \
+            -H $OWNMINE_RCON_IP             \
+            -P $OWNMINE_RCON_PORT           \
+            -p $OWNMINE_RCON_PASS "$*"
+        ownmine_define_error $?
+        if [ $OWNMINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
+            echo "Command relay to RCON server failed."
+        fi
+    }
     # === END REGION ===================
 
 
@@ -190,6 +202,9 @@ function ownmine() {
         ("status")
             echo "ownMine Server: Service status"
             sudo systemctl status ownmine.service
+            ;;
+        ("exec")
+            ownmine_rcon_command "${@:2}"
             ;;
         ("push")
             echo "ownMine Server: Push remote backup"

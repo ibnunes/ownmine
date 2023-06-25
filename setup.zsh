@@ -17,7 +17,7 @@ OWNMINE_ZSHRC=".zshrc"
 OWNMINE_REPO="https://raw.githubusercontent.com/ibnunes/ownMine/master"
 OWNMINE_SERVER="ownmine"
 OWNMINE_FOLDER=".ownmine.d"
-OWNMINE_FILES=("ownmine" "ownminebot" "pwd" "remote" "stdout" "utils")
+OWNMINE_FILES=("ownmine" "ownminebot" "const" "remote" "stdout" "utils")
 OWNMINE_SERVICE_FOLDER="systemd/system"
 OWNMINE_SERVICE_FILES=("ownmine" "ownminebot")
 OWNMINE_LOG_FOLDER="rsyslog.d"
@@ -48,12 +48,15 @@ git clone -q https://github.com/Tiiffi/mcrcon.git "$OWNMINE_HOME/tools/mcrcon"
 
 # 6. Apply new configurations
 echo "Apply: zsh configurations"
+echo -n "What is your Minecraft server rcon password? (You can define it later manually) "
+read OWNMINE_RCON_PASS
+sed -i                                                      \
+    -e "s|\$TBD_OWNMINE_RCON_PASS|$OWNMINE_RCON_PASS|g"     \
+    "$OWNMINE_HOME/$OWNMINE_FOLDER/const.zsh"
 source $OWNMINE_HOME/$OWNMINE_ZSHRC
 
 # 7. Get systemd services
 echo "Get: Minecraft and Discord bot services"
-echo -n "What is your Minecraft server rcon password? (You can define it later manually) "
-read OWNMINE_RCON_PASS
 for file in $OWNMINE_SERVICE_FILES; do
     echo "    $file.service"
     sudo curl -s "$OWNMINE_REPO/$OWNMINE_SERVICE_FOLDER/$file.service" -o "/etc/$OWNMINE_SERVICE_FOLDER/$file.service"

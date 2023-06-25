@@ -10,6 +10,6 @@ done
 unset -v cfg
 
 # ownMine scripts initialization
-ownmine_server_declare_pwd
+ownmine_server_declare_const
 ownmine_server_declare_stdout
 ownmine_debug_off
