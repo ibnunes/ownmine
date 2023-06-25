@@ -26,7 +26,7 @@ function ownmine_server_declare_const() {
     OWNMINE_LOG_FILE="ownmine.log"
 
     # RCON server
-    OWNMINE_RCON_BIN="$OWNMINE_LOCAL_HOME/tools/mcrcon/mcrcon"     # Complete path to 'mcrcon' tool
+    OWNMINE_RCON_BIN="$OWNMINE_LOCAL_HOME/tools/mcrcon/mcrcon"      # Complete path to 'mcrcon' tool
     OWNMINE_RCON_IP="127.0.0.1"                                     # RCON server IP
     OWNMINE_RCON_PORT=25575                                         # RCON server port
     OWNMINE_RCON_PASS=$TBD_OWNMINE_RCON_PASS                        # RCON server password

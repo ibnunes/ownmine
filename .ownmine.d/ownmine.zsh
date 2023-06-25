@@ -147,8 +147,10 @@ function ownmine() {
                 echo "Too many arguments"
                 return 1
             fi ;;
-        (*) echo "Too many arguments"
-            return 1 ;;
+        (*) if [[ $1 != "exec" ]]; then
+                echo "Too many arguments"
+                return 1
+            fi ;;
     esac
 
     # Checks if help is asked for
@@ -168,9 +170,11 @@ function ownmine() {
     fi
 
     # Executes option: requires sudo
-    if [[ $(sudo echo -n) ]]; then
-        echo "Invalid password. Cannot execute."
-        return 1
+    if [[ $1 != "exec" ]]; then
+        if [[ $(sudo echo -n) ]]; then
+            echo "Invalid password. Cannot execute."
+            return 1
+        fi
     fi
 
     # Debug Mode: halt!
