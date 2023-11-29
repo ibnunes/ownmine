@@ -143,7 +143,7 @@ function ownmine() {
     # Checks number of arguments
     case $# in
         (1) ;;
-        (2) if [[ $1 != "debug" ]]; then
+        (2) if [[ $1 != "debug" && $1 != "exec" ]]; then
                 echo "Too many arguments"
                 return 1
             fi ;;

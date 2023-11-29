@@ -74,6 +74,7 @@ Add your Discord bot token to the `ownminebot.py` file, namely on the variable `
 | `stopall`        | Stops both the server and the Discord bot. |
 | `exit`           | Executes 'stop' and 'push' sequentially. |
 | `status`         | Checks for the server daemon status. |
+| `exec`           | Relays a command to be executed via the RCON server. |
 | `push`           | Pushes a main backup to the remote server. |
 | `pull`           | Recovers from the main remote backup. Makes a local backup first. |
 | `backup`         | Makes a local backup. |
