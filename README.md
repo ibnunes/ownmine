@@ -1,8 +1,6 @@
-# ownMine
+# ownmine
 
-**Automation scripts for self-hosted Minecraft servers**
-
-**TODO:** Complete this README. 😅
+**Simple automation scripts for self-hosted Minecraft servers**
 
 
 ## Installation
@@ -10,13 +8,13 @@
 This script has not been properly tested yet! Use at your own risk!
 
 ```
-zsh -c "$(curl -fsSL https://raw.githubusercontent.com/ibnunes/ownMine/master/setup.zsh)"
+zsh -c "$(curl -fsSL https://raw.githubusercontent.com/ibnunes/ownmine/master/setup.zsh)"
 ```
 
 
 ## Configuration
 
-The file `const.zsh` contains all internal variables used by **ownMine**. This file is to be properly filled by the user.
+The file `const.zsh` contains all internal variables used by **ownmine**. This file is to be properly filled by the user.
 
 * ✅ You must define the values by yourself.
 * ⚠️ These are pre-filled with default values, but can be modified.
@@ -58,12 +56,8 @@ The file `const.zsh` contains all internal variables used by **ownMine**. This f
 | `OWNMINE_SERVER_OPERATION_SUCCESS` | ❌ | Self-control flag for operations success. <br> Defined as `0`. |
 
 
-Add your Discord bot token to the `ownminebot.py` file, namely on the variable `_TOKEN`.
-
 
 ## Usage
-
-### ownMine Minecraft Server
 
 **Call:** `ownmine [option]`
 | Option | Description |
@@ -80,13 +74,3 @@ Add your Discord bot token to the `ownminebot.py` file, namely on the variable `
 | `backup`         | Makes a local backup. |
 | `sync`           | Syncs local backups with the remote server. |
 | `debug <on/off>` | Turns Debug Mode on or off. It is off by default. |
-
-
-### ownMine Discord Bot
-
-**Call:** `ownminebot [option]`
-| Option | Description |
-| --- | --- |
-| `start`  | Starts the bot service|
-| `stop`   | Stops the bot service|
-| `status` | Checks for the bot daemon status. |
