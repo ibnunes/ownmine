@@ -1,5 +1,10 @@
 # Ownmine server configuration file
 
+# App Keys
+[appkeys]
+    app1 = "key1"
+    app2 = "key2"
+
 # General configuration
 [ownmine]
     group = "system_group_name"
@@ -9,7 +14,7 @@
     bin = "mcrcon"
 
     [ownmine.log]
-    dir = "/var/log"
+    dir  = "/var/log"
     file = "ownmine-${SRV}.log"
 
 
@@ -19,23 +24,23 @@
 [servers]
     [servers.srv1]
     enabled = true
-    user = "srv1"
+    user    = "srv1"
 
         [servers.srv1.local]
-        home = "path/to/local/${SRV}"
-        jar = "server.jar"
+        home = "/path/to/local/${SRV}"
+        jar  = "server.jar"
 
         [servers.srv1.backup]
-        enabled = true
-        dir = "/path/to/backup/${SRV}"
+        enabled    = true
+        dir        = "/path/to/backup/${SRV}"
         exclusions = [ "dynmap" ]
 
         [servers.srv1.archive]
-        enabled = true
-        dir = "/path/to/archive/${SRV}.bk"
+        enabled    = true
+        dir        = "/path/to/archive/${SRV}.bk"
         exclusions = [ "dynmap" ]
 
         [servers.srv1.rcon]
-        ip = "127.0.0.1"
-        port = "25575"
+        ip       = "127.0.0.1"
+        port     = "25575"
         password = "the_password"

@@ -36,9 +36,9 @@ class NotConnected(Exception):
 
 
 class AppAuthenticationServer(object):
-    def __init__(self):
+    def __init__(self, db = None):
         """Initializes AppAuthenticationServer()"""
-        self._db = DBControl()
+        self._db = DBControl() if db is None else db
 
 
     def authenticateApp(self, headers, method="GET", body=None):

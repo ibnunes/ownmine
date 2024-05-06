@@ -8,11 +8,12 @@ from utils.appauth import *
 
 
 app     = Flask(__name__)
-appAuth = AppAuthenticationServer()
+db      = DBControl()
+appAuth = AppAuthenticationServer(db)
 
 
 
-def authenticateapp(func):
+def authenticate_app(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -29,9 +30,12 @@ def authenticateapp(func):
 
 
 @app.route("/auth/hmac", methods=['GET'])
-@authenticateapp
+@authenticate_app
 def getHMACKey():
-    pass
+    try:
+        return json.dumps({"success" : db.getHMACKey()})
+    except Exception as ex:
+        return json.dumps({"error" : str(ex)})
 
 
 
