@@ -1,0 +1,41 @@
+# Ownmine server configuration file
+
+# General configuration
+[ownmine]
+    group = "system_group_name"
+
+    [ownmine.rcon]
+    dir = "/path/to/mcrcon"
+    bin = "mcrcon"
+
+    [ownmine.log]
+    dir = "/var/log"
+    file = "ownmine-${SRV}.log"
+
+
+# Servers definitions
+#   Each server is defined in [server.<name>].
+#   The server name will be internally saved under the variable ${SRV}.
+[servers]
+    [servers.srv1]
+    enabled = true
+    user = "srv1"
+
+        [servers.srv1.local]
+        home = "path/to/local/${SRV}"
+        jar = "server.jar"
+
+        [servers.srv1.backup]
+        enabled = true
+        dir = "/path/to/backup/${SRV}"
+        exclusions = [ "dynmap" ]
+
+        [servers.srv1.archive]
+        enabled = true
+        dir = "/path/to/archive/${SRV}.bk"
+        exclusions = [ "dynmap" ]
+
+        [servers.srv1.rcon]
+        ip = "127.0.0.1"
+        port = "25575"
+        password = "the_password"

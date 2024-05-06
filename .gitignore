@@ -1,0 +1,5 @@
+# Testing configurations
+cfg/mycfg.*
+
+# macOS junk
+*.DS_Store
