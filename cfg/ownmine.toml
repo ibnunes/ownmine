@@ -25,10 +25,8 @@
     [servers.srv1]
     enabled = true
     user    = "srv1"
-
-        [servers.srv1.local]
-        home = "/path/to/local/${SRV}"
-        jar  = "server.jar"
+    dir     = "/path/to/local/${SRV}"
+    jar     = "server.jar"
 
         [servers.srv1.backup]
         enabled    = true

@@ -2,12 +2,13 @@ import hashlib
 import binascii
 
 from .tomldbhelper import *
+from server.ownminemgr import OwnmineManager
 
 
 class DBControl(object):
     def __init__(self):
-        """Initializes DBControl."""
-        self._helper = TomlDBHelper()
+        self._helper  = TomlDBHelper()
+        self._manager = OwnmineManager(self._helper.data)
         # self._helper.bindErrorCallback(crt.writeError)
 
 
@@ -19,7 +20,7 @@ class DBControl(object):
             appId (int): Application ID
 
         Returns:
-            [type]: [description]
+            str: Application Key associated to the given App ID
         """
         keys = self._helper.data["appkeys"]
         if appId in keys:

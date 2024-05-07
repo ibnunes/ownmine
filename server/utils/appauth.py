@@ -1,10 +1,8 @@
-# from dbhelper.mariadbhelper import *
-from dbhelper.dbcontrol import *
-# import time
-# import uuid
 import hashlib
 import json
 import hmac
+
+from dbhelper.dbcontrol import *
 
 
 class AppIdNotFound(Exception):
@@ -60,14 +58,14 @@ class AppAuthenticationServer(object):
             True: If the signature is correct
         """
         try:
-            appid = headers["appid"]
-            appKey = self._db.fetchAppId(appid)
+            appid     = headers["appid"]
+            appKey    = self._db.fetchAppKey(appid)
             timestamp = headers["timestamp"]
-            nonce = headers["nonce"]
-            sign = headers["sig"]
+            nonce     = headers["nonce"]
+            sign      = headers["sig"]
 
             if appKey is None:
-                raise AppIdNotFound
+                raise AppIdNotFound()
 
             if method == "GET":
                 if self.compareGetSig(timestamp, nonce, appid, appKey, sign):
