@@ -13,6 +13,13 @@ class OwnmineSettings:
 
 
 class OwnmineDirectory:
+    def ifenabled(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if self.enabled:
+                return func(self, *args, **kwargs)
+        return wrapper
+
     def __init__(self, cfg : dict):
         self.enabled    = cfg['enabled']
         self.dir        = cfg['dir']
@@ -22,13 +29,13 @@ class OwnmineDirectory:
         self.dir = self.dir.replace(PLACEHOLDER_SERVER_NAME, name)
         return self
 
+    @ifenabled
     def copy_from(self, pathfrom : str):
-        if self.enabled:
-            pass
+        pass
 
+    @ifenabled
     def copy_to(self, pathto : str):
-        if self.enabled:
-            pass
+        pass
 
 
 
@@ -82,6 +89,38 @@ class OwnmineServer:
 
     @ifenabled
     def start(self):
+        pass
+
+    @ifenabled
+    def stop(self):
+        pass
+
+    @ifenabled
+    def exit(self):
+        self.push()
+        self.stop()
+
+    @ifenabled
+    def status(self):
+        pass
+
+    @ifenabled
+    def exec(self, cmg : str):
+        pass
+
+    @ifenabled
+    def push(self):
+        pass
+
+    @ifenabled
+    def pull(self):
+        pass
+
+    def backup(self):
+        pass
+
+    @ifenabled
+    def sync(self):
         pass
 
 

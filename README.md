@@ -25,8 +25,6 @@ TODO.
 | --- | --- |
 | `start`          | Starts the server. |
 | `stop`           | Stops the server. |
-| `startall`       | Starts both the server and the Discord bot. |
-| `stopall`        | Stops both the server and the Discord bot. |
 | `exit`           | Executes 'stop' and 'push' sequentially. |
 | `status`         | Checks for the server daemon status. |
 | `exec`           | Relays a command to be executed via the RCON server. |
