@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-# ownmine 2.0.0
+# ownmine 1.2.0
 # Igor Nunes, 2024
 
 # This script is a very simple "automated" (cof cof) installation script for ownmine.
