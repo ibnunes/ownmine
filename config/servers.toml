@@ -1,0 +1,33 @@
+[[servers]]
+name = "survival_world"
+path = "/opt/minecraft/survival"
+port = 25565
+
+[servers.rcon]
+enabled = true
+port = 25575
+password = "secret"
+
+[servers.backup]
+local = "/backups/survival"
+
+[servers.backup.smb]
+enabled = true
+path = "//backupserver/minecraft"
+username = "user"
+password = "pass"
+
+
+[[servers]]
+name = "creative_world"
+path = "/opt/minecraft/creative"
+port = 25566
+
+[servers.rcon]
+enabled = false
+
+[servers.backup]
+local = "/backups/creative"
+
+[servers.backup.smb]
+enabled = false

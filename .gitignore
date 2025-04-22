@@ -1,0 +1,9 @@
+# Dear Apple...
+.DSStore
+
+# Just for local development purposes
+archive/
+
+# Python stuff
+__pycache__
+venv/
