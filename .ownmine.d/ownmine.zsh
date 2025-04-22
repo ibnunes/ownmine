@@ -7,38 +7,49 @@ function ownmine_define_error() {
 
 # Turns Debug Mode on
 function ownmine_debug_on() {
-    echo "ownMine Server: DEBUG mode"
+    echo "ownmine Server: DEBUG mode"
     OWNMINE_SERVER_DEBUG=1
 }
 
 # Turns Debug Mode off
 function ownmine_debug_off() {
     # Optional output: uncomment next line if you want it
-    # echo "ownMine Server: PRODUCTION mode"
+    # echo "ownmine Server: PRODUCTION mode"
     OWNMINE_SERVER_DEBUG=0
-}
-
-# Fixes ownership after sync
-function ownmine_fixownership() {
-    sudo chmod -R 770 $1
-    sudo chown -R $OWNMINE_LOCAL_USER:$OWNMINE_LOCAL_USER $1
 }
 
 
 function ownmine() {
     # === REGION Auxiliary Functions ===
+
     # General function to sync with remote server
+    # Args:
+    #    $1   Remote path
+    #    $2   Source path
+    #    $3   Destination path
+    #    $4   Sync mode (default: none)
     function ownmine_server_general_sync() {
         # 1. Make temporary folder
         TMP=$(mktemp -d)
         echo "Temporary folder: $TMP"
 
-        # 1.5. Assign human readable variables
+        # 1.1. Assign human readable variables
         REMOTE_DIR=$1
-        if [[ $2 == $OWNMINE_TEMP ]]; then DIR_SOURCE="$TMP";      else DIR_SOURCE=$2      fi
-        if [[ $3 == $OWNMINE_TEMP ]]; then DIR_DESTINATION="$TMP"; else DIR_DESTINATION=$3 fi
+        if [[ $2 == $OWNMINE_TEMP ]]; then
+            DIR_SOURCE="$TMP"
+            SYNC_CHOWN=""           # Samba takes care of this
+        else
+            DIR_SOURCE=$2
+        fi
 
-        # 1.6. Assign sync mode
+        if [[ $3 == $OWNMINE_TEMP ]]; then
+            DIR_DESTINATION="$TMP"
+            SYNC_CHOWN="--chown=$OWNMINE_LOCAL_USER:$OWNMINE_LOCAL_USER"
+        else
+            DIR_DESTINATION=$3
+        fi
+
+        # 1.2. Assign sync mode
         if [[ $4 == "" ]]; then SYNC_MODE="-u"; else SYNC_MODE=$4; fi
 
         # Debug Mode: halt!
@@ -62,7 +73,7 @@ function ownmine() {
 
         # 3. Sync with remote server
         echo "$OWNMINE_SERVER_OPERATION_DESCRIPTION... (this might take a while)"
-        syncremote "$DIR_SOURCE" "$DIR_DESTINATION" $SYNC_MODE
+        syncremote "$DIR_SOURCE" "$DIR_DESTINATION" $SYNC_MODE $SYNC_CHOWN
         if [ $OWNMINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
             umountremote "$TMP"
             rmtemp "$TMP"
@@ -114,6 +125,18 @@ function ownmine() {
     function ownminehelp() {
         echo "$OWNMINE_SERVER_STDOUT_HELP"
     }
+
+    # Command relay for RCON server
+    function ownmine_rcon_command() {
+        $OWNMINE_RCON_BIN                   \
+            -H $OWNMINE_RCON_IP             \
+            -P $OWNMINE_RCON_PORT           \
+            -p $OWNMINE_RCON_PASS "$*"
+        ownmine_define_error $?
+        if [ $OWNMINE_SERVER_OPERATION_SUCCESS -ne 0 ]; then
+            echo "Command relay to RCON server failed."
+        fi
+    }
     # === END REGION ===================
 
 
@@ -130,12 +153,14 @@ function ownmine() {
     # Checks number of arguments
     case $# in
         (1) ;;
-        (2) if [[ $1 != "debug" ]]; then
+        (2) if [[ $1 != "debug" && $1 != "exec" ]]; then
                 echo "Too many arguments"
                 return 1
             fi ;;
-        (*) echo "Too many arguments"
-            return 1 ;;
+        (*) if [[ $1 != "exec" ]]; then
+                echo "Too many arguments"
+                return 1
+            fi ;;
     esac
 
     # Checks if help is asked for
@@ -155,15 +180,17 @@ function ownmine() {
     fi
 
     # Executes option: requires sudo
-    if [[ $(sudo echo -n) ]]; then
-        echo "Invalid password. Cannot execute."
-        return 1
+    if [[ $1 != "exec" ]]; then
+        if [[ $(sudo echo -n) ]]; then
+            echo "Invalid password. Cannot execute."
+            return 1
+        fi
     fi
 
     # Debug Mode: halt!
     if [ $OWNMINE_SERVER_DEBUG -eq 1 ]; then
         case $1 in
-            ("start" | "stop" | "startall" | "stopall" | "status" )
+            ("start" | "stop" | "status" )
                 echo "$OWNMINE_SERVER_STDOUT_DEBUG_HALT"
                 return 0 ;;
         esac
@@ -171,39 +198,34 @@ function ownmine() {
 
     case $1 in
         ("start")
-            echo "ownMine Server: Start service"
+            echo "ownmine Server: Start service"
             sudo systemctl start ownmine.service
             ;;
         ("stop")
-            echo "ownMine Server: Stop service"
+            echo "ownmine Server: Stop service"
             sudo systemctl stop ownmine.service
             ;;
-        ("startall")
-            ownmine start
-            ownminebot start
-            ;;
-        ("stopall")
-            ownmine stop
-            ownminebot stop
-            ;;
         ("status")
-            echo "ownMine Server: Service status"
+            echo "ownmine Server: Service status"
             sudo systemctl status ownmine.service
             ;;
+        ("exec")
+            ownmine_rcon_command "${@:2}"
+            ;;
         ("push")
-            echo "ownMine Server: Push remote backup"
+            echo "ownmine Server: Push remote backup"
             ownmine_server_push
             ;;
         ("sync")
-            echo "ownMine Server: Sync backups"
+            echo "ownmine Server: Sync backups"
             ownmine_server_sync
             ;;
         ("backup")
-            echo "ownMine Server: Local Backup"
+            echo "ownmine Server: Local Backup"
             ownmine_server_backup
             ;;
         ("pull")
-            echo "ownMine Server: Recover from remote backup"
+            echo "ownmine Server: Recover from remote backup"
             echo "This will:
   1) Make a local backup;
   2) Sync all backups with remote server;
@@ -213,7 +235,6 @@ function ownmine() {
             ownmine backup
             ownmine sync
             ownmine_server_pull
-            ownmine_fixownership $OWNMINE_LOCAL_SERVER
             ;;
         ("exit")
             ownmine stop
