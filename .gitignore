@@ -3,3 +3,6 @@ cfg/mycfg.*
 
 # macOS junk
 *.DS_Store
+
+# Local archive
+archive/local/
