@@ -24,9 +24,8 @@ def send_command(command: str) -> str:
 # === Top-level global commands ===
 
 @app.command("list")
-def list(s: str):
+def list():
     """List all configured servers."""
-    print(f"s = {s}")
     response = send_command("list")
     typer.echo(response)
 
@@ -44,27 +43,23 @@ def reload():
 @server_app.command("status")
 def status(server_name: str):
     """Handles commands for servers."""
-    response = send_command(f"{server_name} status")
+    response = send_command(f"status {server_name}")
     typer.echo(response)
 
 
 @server_app.command("backup")
 def backup(server_name: str):
     """Backup a server."""
-    response = send_command(f"{server_name} backup")
+    response = send_command(f"backup {server_name}")
     typer.echo(response)
 
 
 
 if __name__ == "__main__":
-    print(sys.argv[1:])
-
     match len(sys.argv[1:]):
         case 0:
             sys.argv[1:] = ['--help']
         case l if l >= 2:
+            # Support for syntax-sugar "ownmine server_name command [options]" instead of "ownmine server command [options] server_name"
             sys.argv[1:] = ['server'] + sys.argv[2:] + ([sys.argv[1]] if sys.argv[1] != 'server' else [])
-
-    print(sys.argv[1:])
-
     app()

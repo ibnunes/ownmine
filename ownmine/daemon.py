@@ -3,6 +3,7 @@ from daemon.core import OwnMineDaemon
 def main():
     daemon = OwnMineDaemon()
 
+    # DEBUG: Loaded configuration
     for name, server in daemon.config.servers.items():
         print(f"- {name}")
         print(f"  Path: {server.path}")

@@ -25,9 +25,9 @@ class OwnMineDaemon:
         with conn:
             try:
                 data = conn.recv(1024).decode().strip()
-                print(f"Received `{data}`")
+                print(f'Received "{data}"')
                 response = self.handler.handle(data)
-                print(f"Sending `{response}`")
+                print(f'Sending "{response}"')
                 conn.sendall(response.encode())
             except Exception as e:
                 conn.sendall(f"Error: {str(e)}".encode())

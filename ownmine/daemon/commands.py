@@ -31,7 +31,7 @@ class CommandHandler:
     def __init__(self, daemon):
         from daemon.core import OwnMineDaemon
         self.daemon: OwnMineDaemon = daemon
-        # Debug CommandHandler.commands
+        # DEBUG: CommandHandler.commands
         # for cmd_name, (func, context) in CommandHandler.commands.items():
         #     print(f"{context}::{cmd_name} @ {func}")
 
@@ -41,17 +41,11 @@ class CommandHandler:
         if not parts:
             return "Error: Empty command"
 
-        # TODO: Review logic to get server name, method and other arguments
         cmd, *args = parts
         entry = CommandHandler.commands.get(cmd)
 
         if not entry:
-            if cmd not in self.daemon.config.servers.keys():
-                return f"Error: Unknown command '{cmd}'"
-            cmd, *args = args
-            entry = CommandHandler.commands.get(cmd)
-            if not entry:
-                return f"Error: Unknown command '{cmd}'"
+            return f"Error: Unknown command '{cmd}'"
 
         method, context = entry
 
@@ -74,29 +68,32 @@ class CommandHandler:
     def _list(self):
         """List all configured servers."""
         print("CMD: list")
-
-        return str([server for server in self.daemon.config.servers.keys()])
+        server_list = '\n'.join([server for server in self.daemon.config.servers.keys()])
+        return server_list if server_list != "" else "No servers configured"
 
 
     @cmd_server("start")
     def _start(self, server_name: str):
         """Starts the server."""
         print(f"CMD: start {server_name}")
-        pass
+        # TODO: Start server
+        return f"CMD: start {server_name}"
 
 
     @cmd_server("stop")
     def _stop(self, server_name: str):
         """Stops the server."""
         print(f"CMD: stop {server_name}")
-        pass
+        # TODO: Stop server
+        return f"CMD: stop {server_name}"
 
 
     @cmd_server("exit")
     def _exit(self, server_name: str):
         """Executes 'stop' and 'push' sequentially."""
         print(f"CMD: exit {server_name}")
-        pass
+        # TODO: Exit server
+        return f"CMD: exit {server_name}"
 
 
     @cmd_server("status")
@@ -104,12 +101,12 @@ class CommandHandler:
         """Get the status of a specific server."""
         print(f"CMD: status {server_name}")
 
-        server_config = next((server for server in self.daemon.config['servers'] if server['name'] == server_name), None)
+        server_config = next((server for server in self.daemon.config.servers.keys() if server == server_name), None)
         if not server_config:
             return f"Server '{server_name}' not found."
 
-        # TODO: Get status from systemd
-        return f"Server `{server_name}`..."
+        # TODO: Get server status from systemd
+        return f"CMD: status {server_name}"
 
         # process_name = server_config['name']  # Assuming the server name is used for the process
         # for proc in psutil.process_iter(['pid', 'name']):
@@ -122,21 +119,24 @@ class CommandHandler:
     def _exec(self, server_name: str):
         """Relays a command to be executed via the RCON server."""
         print(f"CMD: exec {server_name}")
-        pass
+        # TODO: Execute command in server
+        return f"CMD: exec {server_name}"
 
 
     @cmd_server("push")
     def _push(self, server_name: str):
         """Pushes a main backup to the remote server."""
         print(f"CMD: push {server_name}")
-        pass
+        # TODO: Push server backup
+        f"CMD: push {server_name}"
 
 
     @cmd_server("pull")
     def _pull(self, server_name: str):
         """Recovers from the main remote backup. Makes a local backup first."""
         print(f"CMD: pull {server_name}")
-        pass
+        # TODO: Pull server backup
+        f"CMD: pull {server_name}"
 
 
     @cmd_server("backup")
@@ -155,13 +155,14 @@ class CommandHandler:
             return f"Backup for server '{server_name}' is not properly configured."
 
         backup_results = []
+        command = ""
 
         # TODO: Perform local backup if configured
         if backup.get('local'):
             local_backup_path = backup['local']
             source_dir = server_config['path']
             command = f"rsync -av --delete {source_dir} {local_backup_path}"
-            backup_results.append(self._run_backup_command(command, server_name))
+            # backup_results.append(self._run_backup_command(command, server_name))
 
         # TODO: Perform SMB backup if enabled
         if backup.get('smb', {}).get('enabled', False):
@@ -170,27 +171,31 @@ class CommandHandler:
             username = smb_backup_config['username']
             password = smb_backup_config['password']
             command = f"smbclient {smb_share} -U {username}%{password} -c 'put {server_config['path']} {local_backup_path}'"
-            backup_results.append(self._run_backup_command(command, server_name))
+            # backup_results.append(self._run_backup_command(command, server_name))
 
-        return "\n".join(backup_results)
+        # return "\n".join(backup_results)
+        return command if command != "" else f"CMD: backup {server_name}"
 
 
     @cmd_server("sync")
     def _sync(self, server_name: str):
         """Syncs local backups with the remote server."""
         print(f"CMD: sync {server_name}")
-        pass
+        # TODO: Sync server backups
+        return f"CMD: sync {server_name}"
 
 
     @cmd("sync")
     def _syncall(self):
         """Syncs all servers."""
         print(f"CMD: sync (all servers)")
-        pass
+        # TODO: Sync all servers backups
+        return f"CMD: sync (all servers)"
 
 
     def _get_backup_config(self, server_config):
         """Helper method to get the backup configuration."""
+        # TODO: properly retrieve backup configuration for server
         return server_config.get('backup', {})
 
 
