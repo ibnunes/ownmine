@@ -3,8 +3,11 @@ import socket
 import threading
 from typing import Optional
 
-from config import load_config
+from common.config import load_config
+from common.response import Response
+from common.socketmsgfmt import SocketMessageFormat
 from daemon.commands import CommandHandler
+
 
 SOCKET_PATH = "/tmp/ownmine.sock"
 
@@ -26,11 +29,13 @@ class OwnMineDaemon:
             try:
                 data = conn.recv(1024).decode().strip()
                 print(f'Received "{data}"')
-                response = self.handler.handle(data)
+                response = SocketMessageFormat.enconde_from_response(self.handler.handle(data))
                 print(f'Sending "{response}"')
                 conn.sendall(response.encode())
             except Exception as e:
-                conn.sendall(f"Error: {str(e)}".encode())
+                response = SocketMessageFormat.enconde_error(str(e))
+                print(f'Sending "{response}"')
+                conn.sendall(response.encode())
 
 
     def run(self):

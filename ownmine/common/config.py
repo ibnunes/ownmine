@@ -33,7 +33,7 @@ class ServerConfig:
 
 @dataclass
 class OwnMineConfig:
-    servers: dict[str, ServerConfig]    # List[ServerConfig]
+    servers: dict[str, ServerConfig]
 
 
 def load_config(path: Optional[str] = None) -> OwnMineConfig:
@@ -46,8 +46,8 @@ def load_config(path: Optional[str] = None) -> OwnMineConfig:
     if 'servers' not in raw_config:
         raise ValueError("No 'servers' section found in TOML config")
 
-    # servers = []
-    servers = {}
+    servers: dict[str, ServerConfig] = {}
+
     for entry in raw_config['servers']:
         rcon_data = entry.get('rcon', {})
         backup_data = entry.get('backup', {})
@@ -72,14 +72,12 @@ def load_config(path: Optional[str] = None) -> OwnMineConfig:
         )
 
         server = ServerConfig(
-            # name=entry['name'],
             path=entry['path'],
             port=entry['port'],
             rcon=rcon,
             backup=backup,
         )
 
-        # servers.append(server)
         servers[entry['name']] = server
 
     return OwnMineConfig(servers=servers)

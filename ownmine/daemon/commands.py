@@ -1,8 +1,12 @@
 import subprocess
 # import psutil
+import shutil
+import os
 import functools
+from datetime import datetime
 from typing import Callable
 
+from common.response import Response
 
 
 class CommandHandler:
@@ -39,13 +43,15 @@ class CommandHandler:
     def handle(self, command: str) -> str:
         parts = command.strip().split()
         if not parts:
-            return "Error: Empty command"
+            return Response.failure("Empty command")
+            # return "Error: Empty command"
 
         cmd, *args = parts
         entry = CommandHandler.commands.get(cmd)
 
         if not entry:
-            return f"Error: Unknown command '{cmd}'"
+            return Response.failure(f"Unknown command '{cmd}'")
+            # return f"Error: Unknown command '{cmd}'"
 
         method, context = entry
 
@@ -53,15 +59,18 @@ class CommandHandler:
             if context == "server":
                 if args:
                     return method(self, args[0], *args[1:])
-                return "Error: Missing server name"
+                return Response.failure("Missing server name")
+                # return "Error: Missing server name"
 
             if context == "general":
                 return method(self, *args)
 
-            return f"Error: Invalid context for '{cmd}'"
+            return Response.failure(f"Invalid context for '{cmd}'")
+            # return f"Error: Invalid context for '{cmd}'"
 
         except Exception as e:
-            return f"Error while executing '{cmd}': {e}"
+            return Response.failure(f"Got '{e}' while executing '{cmd}'")
+            # return f"Error: Got '{e}' while executing '{cmd}'"
 
 
     @cmd("list")
@@ -69,7 +78,22 @@ class CommandHandler:
         """List all configured servers."""
         print("CMD: list")
         server_list = '\n'.join([server for server in self.daemon.config.servers.keys()])
-        return server_list if server_list != "" else "No servers configured"
+        return Response.success(server_list if server_list != "" else "No servers configured")
+
+
+    @cmd("sync")
+    def _syncall(self):
+        """Syncs all servers."""
+        print(f"CMD: sync (all servers)")
+        # TODO: Sync all servers backups
+        return Response.success(f"CMD: sync (all servers)")
+
+
+    @cmd("reload")
+    def _reload_config(self):
+        print(f"CMD: reload")
+        self.daemon.reload_config()
+        return Response.success("Configuration reloaded successfully.")
 
 
     @cmd_server("start")
@@ -77,7 +101,7 @@ class CommandHandler:
         """Starts the server."""
         print(f"CMD: start {server_name}")
         # TODO: Start server
-        return f"CMD: start {server_name}"
+        return Response.success(f"CMD: start {server_name}")
 
 
     @cmd_server("stop")
@@ -85,7 +109,7 @@ class CommandHandler:
         """Stops the server."""
         print(f"CMD: stop {server_name}")
         # TODO: Stop server
-        return f"CMD: stop {server_name}"
+        return Response.success(f"CMD: stop {server_name}")
 
 
     @cmd_server("exit")
@@ -93,7 +117,7 @@ class CommandHandler:
         """Executes 'stop' and 'push' sequentially."""
         print(f"CMD: exit {server_name}")
         # TODO: Exit server
-        return f"CMD: exit {server_name}"
+        return Response.success(f"CMD: exit {server_name}")
 
 
     @cmd_server("status")
@@ -103,10 +127,11 @@ class CommandHandler:
 
         server_config = next((server for server in self.daemon.config.servers.keys() if server == server_name), None)
         if not server_config:
-            return f"Server '{server_name}' not found."
+            return Response.failure(f"Server '{server_name}' not found.")
+            # return f"Error: Server '{server_name}' not found."
 
         # TODO: Get server status from systemd
-        return f"CMD: status {server_name}"
+        return Response.success(f"CMD: status {server_name}")
 
         # process_name = server_config['name']  # Assuming the server name is used for the process
         # for proc in psutil.process_iter(['pid', 'name']):
@@ -120,7 +145,7 @@ class CommandHandler:
         """Relays a command to be executed via the RCON server."""
         print(f"CMD: exec {server_name}")
         # TODO: Execute command in server
-        return f"CMD: exec {server_name}"
+        return Response.success(f"CMD: exec {server_name}")
 
 
     @cmd_server("push")
@@ -128,7 +153,7 @@ class CommandHandler:
         """Pushes a main backup to the remote server."""
         print(f"CMD: push {server_name}")
         # TODO: Push server backup
-        f"CMD: push {server_name}"
+        return Response.success(f"CMD: push {server_name}")
 
 
     @cmd_server("pull")
@@ -136,7 +161,7 @@ class CommandHandler:
         """Recovers from the main remote backup. Makes a local backup first."""
         print(f"CMD: pull {server_name}")
         # TODO: Pull server backup
-        f"CMD: pull {server_name}"
+        return Response.success(f"CMD: pull {server_name}")
 
 
     @cmd_server("backup")
@@ -146,13 +171,15 @@ class CommandHandler:
 
         server_config = next((server for server in self.daemon.config['servers'] if server['name'] == server_name), None)
         if not server_config:
-            return f"Server '{server_name}' not found."
+            return Response.failure(f"Server '{server_name}' not found.")
+            # return f"Error: Server '{server_name}' not found."
 
         # Handle the backup
         backup = self._get_backup_config(server_config)
 
         if not backup:
-            return f"Backup for server '{server_name}' is not properly configured."
+            return Response.failure(f"Backup for server '{server_name}' is not properly configured.")
+            # return f"Error: Backup for server '{server_name}' is not properly configured."
 
         backup_results = []
         command = ""
@@ -174,7 +201,8 @@ class CommandHandler:
             # backup_results.append(self._run_backup_command(command, server_name))
 
         # return "\n".join(backup_results)
-        return command if command != "" else f"CMD: backup {server_name}"
+        return Response.success(command if command != "" else f"CMD: backup {server_name}")
+        # return command if command != "" else f"CMD: backup {server_name}"
 
 
     @cmd_server("sync")
@@ -182,37 +210,31 @@ class CommandHandler:
         """Syncs local backups with the remote server."""
         print(f"CMD: sync {server_name}")
         # TODO: Sync server backups
-        return f"CMD: sync {server_name}"
-
-
-    @cmd("sync")
-    def _syncall(self):
-        """Syncs all servers."""
-        print(f"CMD: sync (all servers)")
-        # TODO: Sync all servers backups
-        return f"CMD: sync (all servers)"
+        return Response.success(f"CMD: sync {server_name}")
 
 
     def _get_backup_config(self, server_config):
         """Helper method to get the backup configuration."""
         # TODO: properly retrieve backup configuration for server
-        return server_config.get('backup', {})
+        return Response.success(str(server_config.get('backup', {})))
 
 
     def _run_backup_command(self, command, server_name):
         """Helper method to execute the backup command and handle errors."""
         try:
             subprocess.run(command, shell=True, check=True)
-            return f"Backup for '{server_name}' completed successfully."
+            return Response.success(f"Backup for '{server_name}' completed successfully.")
+            # return f"Backup for '{server_name}' completed successfully."
         except subprocess.CalledProcessError as e:
-            return f"Backup for '{server_name}' failed: {e}"
+            return Response.failure(f"Error: Backup for '{server_name}' failed: {e}")
+            # return f"Error: Backup for '{server_name}' failed: {e}"
 
 
-    @cmd("reload")
-    def _reload_config(self):
-        print(f"CMD: reload")
-        self.daemon.reload_config()
-        return "Configuration reloaded successfully."
+    def _backup_local(self, server_name, source, destination):
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        backup_path = os.path.join(destination, f"{server_name}_{timestamp}")
+        shutil.copytree(source, backup_path)
+
 
 
 def load_commands():
