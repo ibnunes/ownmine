@@ -63,24 +63,21 @@ class OwnmineClient:
     def run(exe_path: str, args: List[str]):
         print(f"Path: {exe_path}\nArgs: {str(args)}")
 
-        args_len = len(args)
+        match len(args):
+            # No arguments provided: help
+            case 0:
+                return OwnmineClient.help()
 
-        # No arguments provided: help
-        if args_len == 0:
-            OwnmineClient.help()
-            return Response.success()
+            # 1 argument: either help or a general command
+            case 1:
+                command = args[0]
+                if OwnmineClient.Command.is_help(command):
+                    return OwnmineClient.help()
+                if not OwnmineClient.Command.is_general(command):
+                    return Response.failure(f'`{command}` is not a recognized general command.')
+                return OwnmineClient._exec_command(command)
 
-        # 1 argument: either help or a general command
-        if args_len == 1:
-            command = args[0]
-            if OwnmineClient.Command.is_help(command):
-                OwnmineClient.help()
-                return Response.success()
-            if not OwnmineClient.Command.is_general(command):
-                return Response.failure(f'`{command}` is not a recognized general command.')
-            return OwnmineClient._exec_command(command)
-
-        # 2+ arguments: it has to be a server command
+        # 2+ arguments: server command
         server  = args[0]
         command = args[1]
         options = args[2:]
