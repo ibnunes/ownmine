@@ -7,3 +7,6 @@ archive/
 # Python stuff
 __pycache__
 venv/
+
+# The secret stuff
+ownmine/config/ownmine.key

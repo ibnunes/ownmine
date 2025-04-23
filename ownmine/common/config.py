@@ -1,9 +1,17 @@
-import tomllib
-from dataclasses import dataclass, field
-from typing import Optional #, List
 import os
+import json
+from dataclasses import dataclass
+from typing import Optional
 
-DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), '..', 'config', 'servers.toml')
+from common.secret import OwnmineSecret
+from common.response import Response
+
+
+DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), '..', 'config', 'servers.json')
+
+
+from dataclasses import dataclass, asdict
+from typing import Optional, Dict
 
 @dataclass
 class SMBBackupConfig:
@@ -14,70 +22,95 @@ class SMBBackupConfig:
 
 @dataclass
 class BackupConfig:
-    local: str
-    smb:   SMBBackupConfig = field(default_factory=SMBBackupConfig)
+    local: Optional[str] = None
+    smb:   Optional[SMBBackupConfig] = None
 
 @dataclass
 class RCONConfig:
-    enabled:  bool
-    port:     Optional[int] = None
+    enabled: bool
+    port: Optional[int] = None
     password: Optional[str] = None
 
 @dataclass
 class ServerConfig:
-    # name:   str
     path:   str
     port:   int
     rcon:   RCONConfig
     backup: BackupConfig
 
-@dataclass
-class OwnMineConfig:
-    servers: dict[str, ServerConfig]
 
 
-def load_config(path: Optional[str] = None) -> OwnMineConfig:
-    if (path is None):
-        path = DEFAULT_CONFIG_PATH
+class OwnmineConfig:
+    def __init__(self, path: Optional[str] = None, secretmgr: Optional[OwnmineSecret] = None):
+        self.path      = path if path else DEFAULT_CONFIG_PATH
+        self.secretmgr = secretmgr if secretmgr else OwnmineSecret()
+        self.servers   = {}
+        self.load()
 
-    with open(path, 'rb') as f:
-        raw_config = tomllib.load(f)
 
-    if 'servers' not in raw_config:
-        raise ValueError("No 'servers' section found in TOML config")
+    def __del__(self):
+        # TODO: Safeguard if config is somehow lost
+        try:
+            self.save()
+        except Exception as e:
+            print(f"Error saving config on destruction: {e}")
 
-    servers: dict[str, ServerConfig] = {}
 
-    for entry in raw_config['servers']:
-        rcon_data = entry.get('rcon', {})
-        backup_data = entry.get('backup', {})
+    def load(self):
+        with open(self.path, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        self.servers = {
+            name: OwnmineConfig.server_from_dict(cfg, self.secretmgr)
+            for name, cfg in raw.items()
+        }
 
-        smb_data = backup_data.get('smb', {})
-        smb = SMBBackupConfig(
-            enabled=smb_data.get('enabled', False),
-            path=smb_data.get('path'),
-            username=smb_data.get('username'),
-            password=smb_data.get('password'),
+
+    def set_path(self, new_path: str, do_reload: bool = False):
+        self.path = new_path
+        if do_reload:
+            self.load()
+
+
+    def save(self):
+        raw = {
+            name: OwnmineConfig.server_to_dict(cfg, self.secretmgr)
+            for name, cfg in self.servers.items()
+        }
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(raw, f, indent=4)
+
+
+    @staticmethod
+    def server_from_dict(data: dict, secretmgr: OwnmineSecret) -> ServerConfig:
+        rcon = data.get("rcon", {})
+        if rcon.get("password") is not None:
+            if secretmgr.is_encrypted(rcon["password"]):
+                rcon["password"] = secretmgr.decrypt(rcon["password"])
+
+        smb = data.get("backup", {}).get("smb", {})
+        if smb.get("enabled", False) and smb.get("password") is not None:
+            if secretmgr.is_encrypted(smb.get("password")):
+                smb["password"] = secretmgr.decrypt(smb["password"])
+
+        return ServerConfig(
+            path=data["path"],
+            port=data["port"],
+            rcon=RCONConfig(**rcon),
+            backup=BackupConfig(
+                local=data["backup"].get("local"),
+                smb=SMBBackupConfig(**smb) if smb else None
+            )
         )
 
-        rcon = RCONConfig(
-            enabled=rcon_data.get('enabled', False),
-            port=rcon_data.get('port'),
-            password=rcon_data.get('password'),
-        )
 
-        backup = BackupConfig(
-            local=backup_data['local'],
-            smb=smb,
-        )
+    @staticmethod
+    def server_to_dict(server: ServerConfig, secretmgr: OwnmineSecret) -> dict:
+        data = asdict(server)
 
-        server = ServerConfig(
-            path=entry['path'],
-            port=entry['port'],
-            rcon=rcon,
-            backup=backup,
-        )
+        if server.rcon.password and not secretmgr.is_encrypted(server.rcon.password):
+            data["rcon"]["password"] = secretmgr.encrypt(server.rcon.password)
 
-        servers[entry['name']] = server
+        if server.backup.smb and server.backup.smb.password and not secretmgr.is_encrypted(server.backup.smb.password):
+            data["backup"]["smb"]["password"] = secretmgr.encrypt(server.backup.smb.password)
 
-    return OwnMineConfig(servers=servers)
+        return data

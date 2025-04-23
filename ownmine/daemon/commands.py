@@ -44,14 +44,12 @@ class CommandHandler:
         parts = command.strip().split()
         if not parts:
             return Response.failure("Empty command")
-            # return "Error: Empty command"
 
         cmd, *args = parts
         entry = CommandHandler.commands.get(cmd)
 
         if not entry:
             return Response.failure(f"Unknown command '{cmd}'")
-            # return f"Error: Unknown command '{cmd}'"
 
         method, context = entry
 
@@ -60,17 +58,14 @@ class CommandHandler:
                 if args:
                     return method(self, args[0], *args[1:])
                 return Response.failure("Missing server name")
-                # return "Error: Missing server name"
 
             if context == "general":
                 return method(self, *args)
 
             return Response.failure(f"Invalid context for '{cmd}'")
-            # return f"Error: Invalid context for '{cmd}'"
 
         except Exception as e:
             return Response.failure(f"Got '{e}' while executing '{cmd}'")
-            # return f"Error: Got '{e}' while executing '{cmd}'"
 
 
     @cmd("list")
@@ -128,7 +123,6 @@ class CommandHandler:
         server_config = next((server for server in self.daemon.config.servers.keys() if server == server_name), None)
         if not server_config:
             return Response.failure(f"Server '{server_name}' not found.")
-            # return f"Error: Server '{server_name}' not found."
 
         # TODO: Get server status from systemd
         return Response.success(f"CMD: status {server_name}")
@@ -172,14 +166,12 @@ class CommandHandler:
         server_config = next((server for server in self.daemon.config['servers'] if server['name'] == server_name), None)
         if not server_config:
             return Response.failure(f"Server '{server_name}' not found.")
-            # return f"Error: Server '{server_name}' not found."
 
         # Handle the backup
         backup = self._get_backup_config(server_config)
 
         if not backup:
             return Response.failure(f"Backup for server '{server_name}' is not properly configured.")
-            # return f"Error: Backup for server '{server_name}' is not properly configured."
 
         backup_results = []
         command = ""
@@ -200,9 +192,8 @@ class CommandHandler:
             command = f"smbclient {smb_share} -U {username}%{password} -c 'put {server_config['path']} {local_backup_path}'"
             # backup_results.append(self._run_backup_command(command, server_name))
 
-        # return "\n".join(backup_results)
         return Response.success(command if command != "" else f"CMD: backup {server_name}")
-        # return command if command != "" else f"CMD: backup {server_name}"
+        # return "\n".join(backup_results)
 
 
     @cmd_server("sync")
@@ -224,10 +215,8 @@ class CommandHandler:
         try:
             subprocess.run(command, shell=True, check=True)
             return Response.success(f"Backup for '{server_name}' completed successfully.")
-            # return f"Backup for '{server_name}' completed successfully."
         except subprocess.CalledProcessError as e:
             return Response.failure(f"Error: Backup for '{server_name}' failed: {e}")
-            # return f"Error: Backup for '{server_name}' failed: {e}"
 
 
     def _backup_local(self, server_name, source, destination):

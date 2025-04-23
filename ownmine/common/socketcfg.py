@@ -1,7 +1,8 @@
 # from dataclasses import dataclass
 from common.response import Response
 
-# @dataclass
+DEFAULT_SOCKET_PATH = "/tmp/ownmine.sock"
+
 class SocketMessageFormat:
     ERROR_PREFIX   = "[ERROR]"  # len: 7
     SUCCESS_PREFIX = "[OK]"     # len: 4

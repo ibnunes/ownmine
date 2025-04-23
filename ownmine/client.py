@@ -3,7 +3,7 @@ import sys
 from typing import List, Optional
 
 from common.response import Response
-from common.socketmsgfmt import SocketMessageFormat
+from common.socketcfg import SocketMessageFormat, DEFAULT_SOCKET_PATH
 
 
 class OwnmineClient:
@@ -25,12 +25,10 @@ class OwnmineClient:
             return cmd in OwnmineClient.Command._help
 
 
-    SOCKET_PATH = "/tmp/ownmine.sock"
-
     @staticmethod
     def _send_command(command: str) -> str:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-            client.connect(OwnmineClient.SOCKET_PATH)
+            client.connect(DEFAULT_SOCKET_PATH)
             client.sendall(command.encode())
             response = client.recv(1024).decode()
         return response
@@ -48,9 +46,6 @@ class OwnmineClient:
         result = OwnmineClient._send_command(command)
         print(f'   RX < "{result}"')
         return SocketMessageFormat.decode_as_response(result)
-        # if result.startswith("Error: "):
-        #     return Response.failure(result[6:])
-        # return Response.success()
 
 
     @staticmethod

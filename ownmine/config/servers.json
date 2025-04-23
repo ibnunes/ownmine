@@ -1,0 +1,38 @@
+{
+    "survival_world": {
+        "path": "/opt/minecraft/survival",
+        "port": 25565,
+        "rcon": {
+            "enabled": true,
+            "port": 25575,
+            "password": "gAAAAABoCWmpvvKv4KtDlZAWdZtmBuzaw-kwvoliaUDPiy3sruKmlYezS51ZksIJd-p21NcZRGAEcUZGWYx-RTqx5mqW3HhY7Q=="
+        },
+        "backup": {
+            "local": "/backups/survival",
+            "smb": {
+                "enabled": true,
+                "path": "//backupserver/minecraft",
+                "username": "user",
+                "password": "gAAAAABoCWmpobjhfoATov_K1eWjL7yoWw5pa0y3D3J1x7aZuYTnUDEdyQ5WbL2d0RzKiSnNthl00BrJ7QwH7pRwoqVO3Xk9VQ=="
+            }
+        }
+    },
+    "creative_world": {
+        "path": "/opt/minecraft/creative",
+        "port": 25566,
+        "rcon": {
+            "enabled": false,
+            "port": null,
+            "password": null
+        },
+        "backup": {
+            "local": "/backups/creative",
+            "smb": {
+                "enabled": false,
+                "path": null,
+                "username": null,
+                "password": null
+            }
+        }
+    }
+}
