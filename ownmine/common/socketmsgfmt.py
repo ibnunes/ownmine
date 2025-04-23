@@ -7,7 +7,7 @@ class SocketMessageFormat:
     SUCCESS_PREFIX = "[OK]"     # len: 4
 
     @staticmethod
-    def enconde_error(s: str):
+    def encode_error(s: str):
         return f"{SocketMessageFormat.ERROR_PREFIX} {s}"
 
     @staticmethod
@@ -15,10 +15,10 @@ class SocketMessageFormat:
         return f"{SocketMessageFormat.SUCCESS_PREFIX} {s}"
 
     @staticmethod
-    def enconde_from_response(r: Response):
+    def encode_from_response(r: Response):
         if r.is_success():
             return SocketMessageFormat.encode_success(r.message())
-        return SocketMessageFormat.enconde_error(r.message())
+        return SocketMessageFormat.encode_error(r.message())
 
     @staticmethod
     def decode_as_response(s: str):

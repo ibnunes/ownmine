@@ -29,11 +29,11 @@ class OwnMineDaemon:
             try:
                 data = conn.recv(1024).decode().strip()
                 print(f'Received "{data}"')
-                response = SocketMessageFormat.enconde_from_response(self.handler.handle(data))
+                response = SocketMessageFormat.encode_from_response(self.handler.handle(data))
                 print(f'Sending "{response}"')
                 conn.sendall(response.encode())
             except Exception as e:
-                response = SocketMessageFormat.enconde_error(str(e))
+                response = SocketMessageFormat.encode_error(str(e))
                 print(f'Sending "{response}"')
                 conn.sendall(response.encode())
 
