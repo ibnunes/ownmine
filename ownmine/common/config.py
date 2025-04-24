@@ -22,18 +22,20 @@ class SMBBackupConfig:
 
 @dataclass
 class BackupConfig:
-    local: Optional[str] = None
+    local: Optional[str]             = None
     smb:   Optional[SMBBackupConfig] = None
 
 @dataclass
 class RCONConfig:
-    enabled: bool
-    port: Optional[int] = None
+    enabled:  bool
+    ip:       Optional[str] = None
+    port:     Optional[int] = None
     password: Optional[str] = None
 
 @dataclass
 class ServerConfig:
     path:   str
+    jar:    str
     port:   int
     rcon:   RCONConfig
     backup: BackupConfig
@@ -87,6 +89,10 @@ class OwnmineConfig:
             if secretmgr.is_encrypted(rcon["password"]):
                 rcon["password"] = secretmgr.decrypt(rcon["password"])
 
+        # Pre-fill IP with localhost if not provided
+        if rcon.get("ip") is None:
+            rcon["ip"] = "127.0.0.1"
+
         smb = data.get("backup", {}).get("smb", {})
         if smb.get("enabled", False) and smb.get("password") is not None:
             if secretmgr.is_encrypted(smb.get("password")):
@@ -94,6 +100,7 @@ class OwnmineConfig:
 
         return ServerConfig(
             path=data["path"],
+            jar=data["jar"],
             port=data["port"],
             rcon=RCONConfig(**rcon),
             backup=BackupConfig(

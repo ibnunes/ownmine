@@ -1,11 +1,13 @@
 {
     "survival_world": {
         "path": "/opt/minecraft/survival",
+        "jar": "server.jar",
         "port": 25565,
         "rcon": {
             "enabled": true,
+            "ip": "127.0.0.1",
             "port": 25575,
-            "password": "gAAAAABoCWmpvvKv4KtDlZAWdZtmBuzaw-kwvoliaUDPiy3sruKmlYezS51ZksIJd-p21NcZRGAEcUZGWYx-RTqx5mqW3HhY7Q=="
+            "password": "secret"
         },
         "backup": {
             "local": "/backups/survival",
@@ -13,15 +15,17 @@
                 "enabled": true,
                 "path": "//backupserver/minecraft",
                 "username": "user",
-                "password": "gAAAAABoCWmpobjhfoATov_K1eWjL7yoWw5pa0y3D3J1x7aZuYTnUDEdyQ5WbL2d0RzKiSnNthl00BrJ7QwH7pRwoqVO3Xk9VQ=="
+                "password": "secret"
             }
         }
     },
     "creative_world": {
         "path": "/opt/minecraft/creative",
+        "jar": "server.jar",
         "port": 25566,
         "rcon": {
             "enabled": false,
+            "ip": "127.0.0.1",
             "port": null,
             "password": null
         },

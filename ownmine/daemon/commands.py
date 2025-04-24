@@ -2,9 +2,11 @@ import subprocess
 # import psutil
 import shutil
 import os
+import time
 import functools
 from datetime import datetime
 from typing import Callable
+from mcrcon import MCRcon
 
 from common.response import Response
 
@@ -35,6 +37,7 @@ class CommandHandler:
     def __init__(self, daemon):
         from daemon.core import OwnMineDaemon
         self.daemon: OwnMineDaemon = daemon
+        self.running_servers: dict[str, int] = {}
         # DEBUG: CommandHandler.commands
         # for cmd_name, (func, context) in CommandHandler.commands.items():
         #     print(f"{context}::{cmd_name} @ {func}")
@@ -56,13 +59,15 @@ class CommandHandler:
         try:
             if context == "server":
                 if args:
+                    if args[0] not in self.daemon.config.servers.keys():
+                        return Response.failure(f'Server "{args[0]}" not configured')
                     return method(self, args[0], *args[1:])
                 return Response.failure("Missing server name")
 
             if context == "general":
                 return method(self, *args)
 
-            return Response.failure(f"Invalid context for '{cmd}'")
+            return Response.failure(f"Invalid context for '{cmd}' (got '{context}'')")
 
         except Exception as e:
             return Response.failure(f"Got '{e}' while executing '{cmd}'")
@@ -88,31 +93,90 @@ class CommandHandler:
     def _reload_config(self):
         print(f"CMD: reload")
         self.daemon.reload_config()
-        return Response.success("Configuration reloaded successfully.")
+        return Response.success("Configuration reloaded successfully")
 
 
     @cmd_server("start")
     def _start(self, server_name: str):
         """Starts the server."""
         print(f"CMD: start {server_name}")
-        # TODO: Start server
-        return Response.success(f"CMD: start {server_name}")
+
+        server_path = self.daemon.config.servers[server_name].path
+        jar_path    = self.daemon.config.servers[server_name].jar
+        total_path  = os.path.join(server_path, jar_path)
+
+        if not os.path.exists(total_path):
+            return Response.failure(f"Server JAR not found at {total_path}")
+
+        try:
+            process = subprocess.Popen(
+                ["/usr/bin/java", "-Xmx4096M", "-Xms4096M", "-jar", str(total_path), "nogui"],
+                cwd=server_path,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            self.running_servers[server_name] = process.pid
+        except Exception as e:
+            return Response.failure(f"Server start failed: {e}")
+
+        return Response.success(f"Started server {server_name} with PID {self.running_servers[server_name]}")
 
 
     @cmd_server("stop")
     def _stop(self, server_name: str):
         """Stops the server."""
         print(f"CMD: stop {server_name}")
+
         # TODO: Stop server
-        return Response.success(f"CMD: stop {server_name}")
+        server_config = self.daemon.config.servers.get(server_name)
+        if not server_config.rcon.enabled:
+            return Response.failure(f"RCON is not enabled for server {server_name}")
+
+        ip       = server_config.rcon.ip if server_config.rcon.ip is not None else "127.0.0.1"
+        port     = server_config.rcon.port
+        password = server_config.rcon.password
+
+        try:
+            with MCRcon(ip, password, port=port) as mcr:
+                resp = mcr.command("stop")
+                print(f"RCON response: {resp}")
+        except Exception as e:
+            return Response.failure(f"Failed to send RCON stop command: {e}")
+
+        return Response.success(f'Stopped server {server_name} with "{resp}"')
+
+        # TODO: Check if process is still running
+        # pid = self.running_servers.get(server_name)
+        # if pid:
+        #     for _ in range(10):         # Wait up to ~5 seconds
+        #         try:
+        #             os.kill(pid, 0)
+        #             time.sleep(0.5)
+        #         except OSError:
+        #             break               # Process is gone
+        #     else:
+        #         return Response.failure(f"Server '{server_name}' did not shut down cleanly (still running)")
+        #
+        #     self.running_servers.pop(server_name, None)
+        #     return Response.success(f"Stopped server '{server_name}' via RCON")
+        # else:
+        #     return Response.success(f"RCON stop command sent to '{server_name}', no PID found for verification")
 
 
     @cmd_server("exit")
     def _exit(self, server_name: str):
         """Executes 'stop' and 'push' sequentially."""
         print(f"CMD: exit {server_name}")
-        # TODO: Exit server
-        return Response.success(f"CMD: exit {server_name}")
+
+        response = self._stop(server_name)
+        if response.is_failure():
+            return Response.failure(f"Exit server failed at 'stop' with {response.message()}")
+
+        response = self._push(server_name)
+        if response.is_failure():
+            return Response.failure(f"Exit server failed at 'stop' with {response.message()}")
+
+        return Response.success(f"Exited server {server_name}")
 
 
     @cmd_server("status")
@@ -120,11 +184,11 @@ class CommandHandler:
         """Get the status of a specific server."""
         print(f"CMD: status {server_name}")
 
-        server_config = next((server for server in self.daemon.config.servers.keys() if server == server_name), None)
-        if not server_config:
-            return Response.failure(f"Server '{server_name}' not found.")
+        # server_config = next((server for server in self.daemon.config.servers.keys() if server == server_name), None)
+        # if not server_config:
+        #     return Response.failure(f"Server '{server_name}' not found")
 
-        # TODO: Get server status from systemd
+        # TODO: Get server status from PID and systemd
         return Response.success(f"CMD: status {server_name}")
 
         # process_name = server_config['name']  # Assuming the server name is used for the process
@@ -165,13 +229,13 @@ class CommandHandler:
 
         server_config = next((server for server in self.daemon.config['servers'] if server['name'] == server_name), None)
         if not server_config:
-            return Response.failure(f"Server '{server_name}' not found.")
+            return Response.failure(f"Server '{server_name}' not found")
 
         # Handle the backup
         backup = self._get_backup_config(server_config)
 
         if not backup:
-            return Response.failure(f"Backup for server '{server_name}' is not properly configured.")
+            return Response.failure(f"Backup for server '{server_name}' is not properly configured")
 
         backup_results = []
         command = ""
@@ -214,9 +278,9 @@ class CommandHandler:
         """Helper method to execute the backup command and handle errors."""
         try:
             subprocess.run(command, shell=True, check=True)
-            return Response.success(f"Backup for '{server_name}' completed successfully.")
+            return Response.success(f"Backup for '{server_name}' completed successfully")
         except subprocess.CalledProcessError as e:
-            return Response.failure(f"Error: Backup for '{server_name}' failed: {e}")
+            return Response.failure(f"Backup for '{server_name}' failed: {e}")
 
 
     def _backup_local(self, server_name, source, destination):
