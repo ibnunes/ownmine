@@ -1,42 +1,81 @@
 {
-    "survival_world": {
-        "path": "/opt/minecraft/survival",
-        "jar": "server.jar",
-        "port": 25565,
-        "rcon": {
-            "enabled": true,
-            "ip": "127.0.0.1",
-            "port": 25575,
-            "password": "secret"
-        },
-        "backup": {
-            "local": "/backups/survival",
-            "smb": {
-                "enabled": true,
-                "path": "//backupserver/minecraft",
-                "username": "user",
-                "password": "secret"
-            }
-        }
+    "mode": 6,
+    "log": {
+        "enabled": true,
+        "path": "/var/log",
+        "file": "ownmine.log",
+        "level": "info"
     },
-    "creative_world": {
-        "path": "/opt/minecraft/creative",
-        "jar": "server.jar",
-        "port": 25566,
-        "rcon": {
-            "enabled": false,
-            "ip": "127.0.0.1",
-            "port": null,
-            "password": null
+    "servers": {
+        "survival": {
+            "path": "/opt/minecraft/survival",
+            "jar": "server.jar",
+            "port": 25565,
+            "rcon": {
+                "enabled": true,
+                "ip": "127.0.0.1",
+                "port": 25575,
+                "password": "secret"
+            },
+            "log": {
+                "enabled": true,
+                "path": null,
+                "file": null,
+                "level": "info"
+            },
+            "backup": {
+                "local": "/backups/survival",
+                "smb": {
+                    "enabled": true,
+                    "server": "//backupserver",
+                    "share": "minecraft",
+                    "mirror": "survival/mirror",
+                    "archive": "survival/archive",
+                    "username": "user",
+                    "password": "secret",
+                    "domain": "WORKGROUP",
+                    "gid": 1002,
+                    "uid": 1001,
+                    "filemode": "0770",
+                    "dirmode": "0770"
+                }
+            },
+            "user": "user1"
         },
-        "backup": {
-            "local": "/backups/creative",
-            "smb": {
+        "creative": {
+            "path": "/opt/minecraft/creative",
+            "jar": "server.jar",
+            "port": 25566,
+            "rcon": {
+                "enabled": false,
+                "ip": "127.0.0.1",
+                "port": null,
+                "password": null
+            },
+            "log": {
                 "enabled": false,
                 "path": null,
-                "username": null,
-                "password": null
-            }
+                "file": null,
+                "level": null
+            },
+            "backup": {
+                "local": "/backups/creative",
+                "smb": {
+                    "enabled": false,
+                    "server": null,
+                    "share": null,
+                    "mirror": null,
+                    "archive": null,
+                    "username": null,
+                    "password": null,
+                    "domain": "WORKGROUP",
+                    "gid": null,
+                    "uid": null,
+                    "filemode": "0770",
+                    "dirmode": "0770"
+                }
+            },
+            "user": "user2"
         }
     }
 }

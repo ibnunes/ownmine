@@ -1,24 +1,31 @@
 import os
 import json
-from dataclasses import dataclass
+import getpass
+from dataclasses import dataclass, asdict
 from typing import Optional
 
 from common.secret import OwnmineSecret
 from common.response import Response
+from common.execmgr import ExecutionMode
 
 
 DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), '..', 'config', 'servers.json')
 
 
-from dataclasses import dataclass, asdict
-from typing import Optional, Dict
-
 @dataclass
 class SMBBackupConfig:
     enabled:  bool
-    path:     Optional[str] = None
+    server:   Optional[str] = None
+    share:    Optional[str] = None
+    mirror:   Optional[str] = None
+    archive:  Optional[str] = None
     username: Optional[str] = None
     password: Optional[str] = None
+    domain:   str           = "WORKGROUP"
+    gid:      Optional[str] = None
+    uid:      Optional[str] = None
+    filemode: str           = "0770"
+    dirmode:  str           = "0770"
 
 @dataclass
 class BackupConfig:
@@ -33,53 +40,82 @@ class RCONConfig:
     password: Optional[str] = None
 
 @dataclass
+class LogConfig:
+    enabled: bool
+    path:    Optional[str] = None
+    file:    Optional[str] = None
+    level:   Optional[str] = None
+
+@dataclass
 class ServerConfig:
     path:   str
     jar:    str
     port:   int
     rcon:   RCONConfig
+    log:    LogConfig
     backup: BackupConfig
+    user:   Optional[str] = None
 
 
 
 class OwnmineConfig:
     def __init__(self, path: Optional[str] = None, secretmgr: Optional[OwnmineSecret] = None):
-        self.path      = path if path else DEFAULT_CONFIG_PATH
-        self.secretmgr = secretmgr if secretmgr else OwnmineSecret()
-        self.servers   = {}
+        self.path:      str                     = path if path else DEFAULT_CONFIG_PATH
+        self.secretmgr: OwnmineSecret           = secretmgr if secretmgr else OwnmineSecret()
+        self.servers:   dict[str, ServerConfig] = {}
+        self.log:       LogConfig               = None
+        self.mode:      ExecutionMode           = None
+        self._original_raw                      = None
         self.load()
 
 
     def __del__(self):
-        # TODO: Safeguard if config is somehow lost
+        # TODO: Better safeguard if config is somehow lost
+        if self.servers == {}:
+            print("No configuration in memory on destruction: skipping")
+            return
         try:
             self.save()
         except Exception as e:
             print(f"Error saving config on destruction: {e}")
+            if self._original_raw is not None:
+                print("Saving original raw file...")
+                with open(self.path, "w", encoding="utf-8") as f:
+                    json.dump(self._original_raw, f, indent=4)
+            else:   # We should NEVER hit this
+                print("PANIC! No raw backup available! Your configuration may have been lost!")
 
 
     def load(self):
         with open(self.path, "r", encoding="utf-8") as f:
             raw = json.load(f)
+            f.seek(0, os.SEEK_SET)
+            self._original_raw = json.load(f)   # Loaded as an independent object, `= raw` will just point to a reference of `raw`
         self.servers = {
             name: OwnmineConfig.server_from_dict(cfg, self.secretmgr)
-            for name, cfg in raw.items()
+            for name, cfg in raw.get("servers", {}).items()
         }
+        self.log  = LogConfig(**raw.get("log", {}))
+        self.mode = ExecutionMode(raw.get("mode", 0))
+
+
+    def save(self):
+        raw = {
+            "mode": self.mode.flag,
+            "log": asdict(self.log),
+            "servers": {
+                name: OwnmineConfig.server_to_dict(cfg, self.secretmgr)
+                for name, cfg in self.servers.items()
+            }
+        }
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(raw, f, indent=4)
 
 
     def set_path(self, new_path: str, do_reload: bool = False):
         self.path = new_path
         if do_reload:
             self.load()
-
-
-    def save(self):
-        raw = {
-            name: OwnmineConfig.server_to_dict(cfg, self.secretmgr)
-            for name, cfg in self.servers.items()
-        }
-        with open(self.path, "w", encoding="utf-8") as f:
-            json.dump(raw, f, indent=4)
 
 
     @staticmethod
@@ -98,14 +134,20 @@ class OwnmineConfig:
             if secretmgr.is_encrypted(smb.get("password")):
                 smb["password"] = secretmgr.decrypt(smb["password"])
 
+        user = data["user"]
+        if user is None:
+            user = getpass.getuser()
+
         return ServerConfig(
-            path=data["path"],
-            jar=data["jar"],
-            port=data["port"],
-            rcon=RCONConfig(**rcon),
-            backup=BackupConfig(
-                local=data["backup"].get("local"),
-                smb=SMBBackupConfig(**smb) if smb else None
+            path   = data["path"],
+            jar    = data["jar"],
+            port   = data["port"],
+            user   = user,
+            log    = LogConfig(**data.get("log", {})),
+            rcon   = RCONConfig(**rcon),
+            backup = BackupConfig(
+                local = data["backup"].get("local"),
+                smb   = SMBBackupConfig(**smb) if smb else None
             )
         )
 

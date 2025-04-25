@@ -11,9 +11,7 @@ class Response:
     def __str__(self):
         if self.err_code == Response.SUCCESS:
             return "Success" + (f':\n{self.msg}' if self.msg is not None else "")
-        if self.msg is None:
-            return f"Error ({self.err_code})"
-        return f"Error ({self.err_code}): {self.msg}"
+        return f"Failure" + (f':\n{self.msg}' if self.msg is not None else "")
 
     def __repr__(self):
         return str(self)

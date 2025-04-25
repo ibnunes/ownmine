@@ -21,6 +21,8 @@ If you're checking out this branch, stay tuned 😉
 - [ ] Manage servers via CLI
 - [ ] Push and pull backups
 - [ ] Push backups to SMB shares
+- [ ] Dry-run and/or debug mode
+- [ ] Client: parse answer given by daemon
 - [ ] Tests & validation
 
 
@@ -37,3 +39,5 @@ If you're checking out this branch, stay tuned 😉
 - [ ] Schedule backups
 - [ ] Configure scheduled actions
 - [ ] Automate key regen
+- [ ] GUI to easily manage configuration
+- [ ] GUI client to connect to daemon
