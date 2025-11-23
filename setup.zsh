@@ -1,7 +1,7 @@
 #!/bin/zsh
 
-# ownmine 1.2.0
-# Igor Nunes, 2024
+# ownmine 2.0.0
+# Igor Nunes, 2025
 
 # This script is a very simple "automated" (cof cof) installation script for ownmine.
 # A more complete version might be done in the future, no promises.
@@ -10,18 +10,52 @@
 echo "ownmine: simple self-hosted Minecraft server management"
 echo "Automated configuration script for ZSH"
 
-# 1. Constants declaration
+# 1. Initial declarations
+# 1.1. Constants
 echo "Initializing configuration script..."
 local OWNMINE_HOME="$HOME"
 local OWNMINE_ZSHRC=".zshrc"
 local OWNMINE_REPO="https://raw.githubusercontent.com/ibnunes/ownMine/master"
 local OWNMINE_SERVER="ownmine"
 local OWNMINE_FOLDER=".ownmine.d"
-local OWNMINE_FILES=("ownmine" "const" "remote" "stdout" "utils")
+local OWNMINE_FILES_STANDALONE=("ownmine" "const" "stdout" "utils" "remote")
+local OWNMINE_FILES_PROXMOXCT=("ownmine" "const" "stdout" "utils")
 local OWNMINE_SERVICE_FOLDER="systemd/system"
 local OWNMINE_SERVICE_FILES=("ownmine")
 local OWNMINE_LOG_FOLDER="rsyslog.d"
 local OWNMINE_LOG_FILES=("ownmine")
+
+# 1.2. Utility functions
+# prompt_option <min> <max> <default> <prompt>
+function prompt_option() {
+    local A=$1
+    local B=$2
+    local DEFAULT=$3
+    local PROMPT=$4
+    local input choice
+
+    while true; do
+        read "?${PROMPT} ($A-$B, default: $DEFAULT): " input || input=""
+
+        # Nothing real: assume default
+        if [[ -z $input ]]; then
+            choice=$DEFAULT
+            break
+        fi
+
+        # Check if it is a number between min and max
+        if [[ $input =~ '^[0-9]+$' ]]; then
+            if (( input >= A && input <= B )); then
+                choice=$input
+                break
+            fi
+        fi
+        print "Invalid option."
+    done
+
+    PROMPT_REPLY=$choice
+}
+
 
 # 2. Append configuration to .zshrc file
 echo "Config: .zshrc"
@@ -30,11 +64,29 @@ if ! grep -q $OWNMINE_ZSH_CONFIG $OWNMINE_HOME/$OWNMINE_ZSHRC; then
     echo $OWNMINE_ZSH_CONFIG >> $OWNMINE_HOME/$OWNMINE_ZSHRC
 fi
 
-# 3. Get all scripts for server management
+# 3. Will this be a standalone configuration or running inside a Proxmox CT?
+prompt_option 1 2 1 "Choose installation type: 1 = standalone, 2 = Proxmox CT"
+local OWNMINE_FILES=()
+local OWNMINE_INSTALLATION_DIR=""
+case $PROMPT_REPLY in
+    (1)
+        OWNMINE_FILES=$OWNMINE_FILES_STANDALONE
+        OWNMINE_INSTALLATION_DIR="standalone"
+        ;;
+    (2)
+        OWNMINE_FILES=$OWNMINE_FILES_PROXMOXCT
+        OWNMINE_INSTALLATION_DIR="proxmoxct"
+        ;;
+    (*)
+        exit    # Should never reach this point!
+        ;;
+esac
+
+# 4. Get all scripts for server management
 echo "Get: ownmine ZSH server management scripts"
 for file in $OWNMINE_FILES; do
     echo "    $file.zsh"
-    curl -s "$OWNMINE_REPO/$OWNMINE_FOLDER/$file.zsh" -o "$OWNMINE_HOME/$OWNMINE_FOLDER/$file.zsh"
+    curl -s "$OWNMINE_REPO/$OWNMINE_INSTALLATION_DIR/$OWNMINE_FOLDER/$file.zsh" -o "$OWNMINE_HOME/$OWNMINE_FOLDER/$file.zsh"
 done
 
 # 5. Get mcrcon tool to be able to stop the server safely
@@ -69,7 +121,7 @@ done
 echo "Get: ownmine logging services"
 for file in $OWNMINE_LOG_FILES; do
     echo "    $file.conf"
-    sudo curl -s "$OWNMINE_REPO/$OWNMINE_LOG_FOLDER/$file.conf" -o "/etc/$OWNMINE_LOG_FOLDER/$file.log"
+    sudo curl -s "$OWNMINE_REPO/$OWNMINE_INSTALLATION_DIR/$OWNMINE_LOG_FOLDER/$file.conf" -o "/etc/$OWNMINE_LOG_FOLDER/$file.log"
     sudo sed -i                                             \
         -e "s|\$OWNMINE_LOG_FOLDER|$OWNMINE_LOG_FOLDER|g"   \
         -e "s|\$OWNMINE_LOG_FILE|$OWNMINE_LOG_FILE|g"       \
@@ -93,6 +145,9 @@ unset OWNMINE_SERVICE_FILES
 unset OWNMINE_LOG_FOLDER
 unset OWNMINE_LOG_FILES
 unset OWNMINE_RCON_PASS
+unset OWNMINE_INSTALLATION_TYPE
+unset PROMPT_REPLY
+unset -f prompt_option
 
 echo "ownmine has been configured.
 Check out out to use the commands with:  ownmine help"
