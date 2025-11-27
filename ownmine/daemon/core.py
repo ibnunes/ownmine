@@ -7,8 +7,7 @@ from dataclasses import dataclass
 from common.config import OwnmineConfig
 from common.socketcfg import SocketMessageFormat, DEFAULT_SOCKET_PATH
 from daemon.commands import CommandHandler
-from common.execmgr import ExecutionMode
-
+# from common.execmgr import ExecutionMode
 from common.log import OwnmineLog
 
 

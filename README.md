@@ -21,7 +21,9 @@ If you're checking out this branch, stay tuned 😉
 - [ ] Manage servers via CLI
 - [ ] Push and pull backups
 - [ ] Push backups to SMB shares
-- [ ] Dry-run and/or debug mode
+- [x] Dry-run mode
+- [ ] Debug mode
+- [ ] Add support for local mirror
 - [ ] Client: parse answer given by daemon
 - [ ] Tests & validation
 
@@ -31,7 +33,9 @@ If you're checking out this branch, stay tuned 😉
 - [ ] Improve logging and error handling
 - [ ] Allow jar options configuration
 - [ ] Add status and health checks
+- [ ] Support for remote backups via SSH/SFTP
 - [ ] Allow key regen
+- [ ] Continuous communication between client and daemon until end of command
 
 
 ### Future

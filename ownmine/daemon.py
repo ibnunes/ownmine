@@ -1,6 +1,8 @@
 import os
+
 from daemon.core import OwnmineDaemon
 from common.log import OwnmineLog
+
 
 def main():
     daemon = OwnmineDaemon()

@@ -5,7 +5,7 @@ from typing import List, Optional
 from common.response import Response
 from common.socketcfg import SocketMessageFormat, DEFAULT_SOCKET_PATH
 
-from dataclasses import dataclass
+
 class Font:
     from common.escape import Ansi
     font    = Ansi.escape
@@ -20,8 +20,6 @@ class Font:
     success = font('fg_green')
     faded   = font('fg', 238)
 
-
-@dataclass
 
 class OwnmineClient:
     class Command:
